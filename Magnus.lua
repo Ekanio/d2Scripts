@@ -40,7 +40,6 @@ function Magnus.init()
         if NPC.GetUnitName(Heroes.GetLocal()) == "npc_dota_hero_magnataur" then
             myHero = Heroes.GetLocal()
             myTeam = Entity.GetTeamNum(myHero)
-            Log.Write("init")
         end;
     end;
 end;
@@ -51,6 +50,7 @@ function Magnus.OnGameStart()
 end;
 
 function Magnus.OnDraw()
+    if not myHero then return end
     if not Menu.IsEnabled(Magnus.optionEnabled) then return end
     if BlinkSkewerToggle then
         Renderer.SetDrawColor(0, 255, 0, 175)   
@@ -71,6 +71,7 @@ end
 
 function Magnus.OnUpdate()
     if not Menu.IsEnabled(Magnus.optionEnabled) then return end
+    if not myHero then return end
     local Mana = NPC.GetMana(myHero)
     local blink = MagnusBlink(myHero)
     local shockwave = NPC.GetAbility(myHero, "magnataur_shockwave")
