@@ -4,19 +4,19 @@ local ScreenWidth, ScreenHeight = Renderer.GetScreenSize()
 --local menuLang = Menu.GetValue(Menu.GetLanguageOptionId()) не перевел потому что Menu.GetLanguageOptionId() не возвращает ничего...
 
 Magnus.optionEnabled = Menu.AddOptionBool({"Hero Specific", "Magnus"}, "Enable", false)
-Magnus.optionSwapMode = Menu.AddOptionCombo({"Hero Specific", "Magnus", "Blink + Skewer"}, "Blink + Skewer target", {'Any hero in radius', 'Hover mouse on enemy'}, 1)
-Magnus.optionSwapPointMode = Menu.AddOptionCombo({"Hero Specific", "Magnus", "Blink + Skewer"}, "Blink + Skewer position", {'Hero position', 'Mouse position'}, 1)
-Magnus.optionSwapShockwave = Menu.AddOptionBool({"Hero Specific", "Magnus", "Blink + Skewer"}, "Use Shockwave", false)
-Magnus.optionSwapToggle = Menu.AddKeyOption({"Hero Specific", "Magnus", "Blink + Skewer"}, "Blink + Skewer key", Enum.ButtonCode.BUTTON_CODE_NONE)
+Magnus.optionBlinkSkewerMode = Menu.AddOptionCombo({"Hero Specific", "Magnus", "Blink + Skewer"}, "Blink + Skewer target", {'Any hero in radius', 'Hover mouse on enemy'}, 1)
+Magnus.optionBlinkSkewerPointMode = Menu.AddOptionCombo({"Hero Specific", "Magnus", "Blink + Skewer"}, "Blink + Skewer position", {'Hero position', 'Mouse position'}, 1)
+Magnus.optionBlinkSkewerShockwave = Menu.AddOptionBool({"Hero Specific", "Magnus", "Blink + Skewer"}, "Use Shockwave", false)
+Magnus.optionBlinkSkewerToggle = Menu.AddKeyOption({"Hero Specific", "Magnus", "Blink + Skewer"}, "Blink + Skewer key", Enum.ButtonCode.BUTTON_CODE_NONE)
 Magnus.minEnemiesRP = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "Minimum enemies", 1, 5, 3)
 Magnus.optionAutoRPToMouse = Menu.AddKeyOption({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "Blink + RP + Skewer to mouse", Enum.ButtonCode.BUTTON_CODE_NONE)
 Magnus.optionHornTossMode = Menu.AddOptionBool({"Hero Specific", "Magnus", "Horn Toss"}, "Use Horn Toss", true)
 Magnus.optionFallenSkyAsBlink = Menu.AddOptionBool({"Hero Specific", "Magnus", "Settings"}, "Use Fallen Sky as blink", false)
-Magnus.PositionX = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Settings"}, "Blink + Skewer info position X", 0, ScreenWidth, 1720)
-Magnus.PositionY = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Settings"}, "Blink + Skewer info position Y", 0, ScreenHeight, 50)
+Magnus.optionPositionX = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Settings"}, "Blink + Skewer info position X", 0, ScreenWidth, 1680)
+Magnus.optionPositionY = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Settings"}, "Blink + Skewer info position Y", 0, ScreenHeight, 50)
 Menu.AddMenuIcon({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "panorama/images/spellicons/magnataur_reverse_polarity_png.vtex_c")
 Menu.AddOptionIcon(Magnus.optionFallenSkyAsBlink, "panorama/images/items/fallen_sky_png.vtex_c")
-Menu.AddOptionIcon(Magnus.optionSwapShockwave, 'panorama/images/spellicons/magnataur_shockwave_png.vtex_c')
+Menu.AddOptionIcon(Magnus.optionBlinkSkewerShockwave, 'panorama/images/spellicons/magnataur_shockwave_png.vtex_c')
 Menu.AddMenuIcon({"Hero Specific", "Magnus"}, 'panorama/images/heroes/icons/npc_dota_hero_magnataur_png.vtex_c')
 Menu.AddMenuIcon({"Hero Specific", "Magnus", "Blink + Skewer"}, "panorama/images/spellicons/magnataur_skewer_png.vtex_c")
 Menu.AddMenuIcon({"Hero Specific", "Magnus", "Horn Toss"}, 'panorama/images/spellicons/magnataur_horn_toss_png.vtex_c')
@@ -31,32 +31,47 @@ Magnus.RPitems = Menu.AddOptionMultiSelect({"Hero Specific", "Magnus", "Blink + 
 }, false)
 
 Magnus.font = Renderer.LoadFont("Tahoma", 30, Enum.FontWeight.EXTRABOLD)
-local swap = false
+
+local BlinkSkewerToggle = false
+local myHero = nil
+local myTeam = nil
+function Magnus.init()
+    if Engine.IsInGame() then
+        if NPC.GetUnitName(Heroes.GetLocal()) == "npc_dota_hero_magnataur" then
+            myHero = Heroes.GetLocal()
+            myTeam = Entity.GetTeamNum(myHero)
+            Log.Write("init")
+        end;
+    end;
+end;
+
+Magnus.init();
+function Magnus.OnGameStart()
+    Magnus.init();
+end;
 
 function Magnus.OnDraw()
     if not Menu.IsEnabled(Magnus.optionEnabled) then return end
-    if swap then
+    if BlinkSkewerToggle then
         Renderer.SetDrawColor(0, 255, 0, 175)   
-        if Menu.GetValue(Magnus.optionSwapMode) == 0 then
-            Renderer.DrawText(Magnus.font, Menu.GetValue(Magnus.PositionX), Menu.GetValue(Magnus.PositionY), "swapper (table)", 1)
+        if Menu.GetValue(Magnus.optionBlinkSkewerMode) == 0 then
+            Renderer.DrawText(Magnus.font, Menu.GetValue(Magnus.optionPositionX), Menu.GetValue(Magnus.optionPositionY), "BlinkSkewer (table)", 1)
         end
-        if Menu.GetValue(Magnus.optionSwapMode) == 1 then
-            Renderer.DrawText(Magnus.font, Menu.GetValue(Magnus.PositionX), Menu.GetValue(Magnus.PositionY), "swapper (mouse)", 1)
+        if Menu.GetValue(Magnus.optionBlinkSkewerMode) == 1 then
+            Renderer.DrawText(Magnus.font, Menu.GetValue(Magnus.optionPositionX), Menu.GetValue(Magnus.optionPositionY), "BlinkSkewer (mouse)", 1)
         end
-        if Menu.GetValue(Magnus.optionSwapPointMode) == 0 then
-            Renderer.DrawText(Magnus.font, Menu.GetValue(Magnus.PositionX), Menu.GetValue(Magnus.PositionY) + 25, "On hero", 1)
+        if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 0 then
+            Renderer.DrawText(Magnus.font, Menu.GetValue(Magnus.optionPositionX), Menu.GetValue(Magnus.optionPositionY) + 25, "On hero", 1)
         end
-        if Menu.GetValue(Magnus.optionSwapPointMode) == 1 then
-            Renderer.DrawText(Magnus.font, Menu.GetValue(Magnus.PositionX), Menu.GetValue(Magnus.PositionY) + 25, "On mouse", 1)
+        if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 1 then
+            Renderer.DrawText(Magnus.font, Menu.GetValue(Magnus.optionPositionX), Menu.GetValue(Magnus.optionPositionY) + 25, "On mouse", 1)
         end
     end
 end
 
 function Magnus.OnUpdate()
     if not Menu.IsEnabled(Magnus.optionEnabled) then return end
-    local myHero = Heroes.GetLocal()
     local Mana = NPC.GetMana(myHero)
-    if not myHero or NPC.GetUnitName(myHero) ~= "npc_dota_hero_magnataur" then return end
     local blink = MagnusBlink(myHero)
     local shockwave = NPC.GetAbility(myHero, "magnataur_shockwave")
     local skewer = NPC.GetAbility(myHero, "magnataur_skewer")
@@ -64,15 +79,19 @@ function Magnus.OnUpdate()
     local HornToss = NPC.GetAbility(myHero, "magnataur_horn_toss")
     local talent425 = NPC.GetAbility(myHero, "special_bonus_unique_magnus_3")
     local skewer_castrange = Ability.GetLevelSpecialValueFor(skewer, "range") + Ability.GetCastRange(skewer)
+    local skewerManaCost = Ability.GetManaCost(skewer)
+    local shockwaveManaCost = Ability.GetManaCost(shockwave)
+    local RPManaCost = Ability.GetManaCost(RP)
+    local HornTossManaCost = Ability.GetManaCost(HornToss)
     if talent425 and Ability.GetLevel(talent425) > 0 then
         skewer_castrange = Ability.GetLevelSpecialValueFor(skewer, "range") + Ability.GetCastRange(skewer) + 425
     end
-    if Menu.IsKeyDownOnce(Magnus.optionSwapToggle) then
-        swap = not swap
-        if Menu.GetValue(Magnus.optionSwapPointMode) == 1 then
+    if Menu.IsKeyDownOnce(Magnus.optionBlinkSkewerToggle) then
+        BlinkSkewerToggle = not BlinkSkewerToggle
+        if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 1 then
             prevPos = Input.GetWorldCursorPos()
         end
-        if swap then
+        if BlinkSkewerToggle then
             skewerParticle = Particle.Create("particles/ui_mouseactions/range_display.vpcf")
             Particle.SetControlPoint(skewerParticle, 0, prevPos)
             Particle.SetControlPoint(skewerParticle, 1, Vector(100,0,0));
@@ -84,22 +103,22 @@ function Magnus.OnUpdate()
             Particle.Destroy(skewerParticle)
         end
     end
-    if swap then
-        if Menu.GetValue(Magnus.optionSwapPointMode) == 0 then
+    if BlinkSkewerToggle then
+        if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 0 then
             prevPos = Entity.GetAbsOrigin(myHero)
         end
         if Ability.IsReady(blink) then
             if Ability.IsReady(skewer) then
-                if Mana > Ability.GetManaCost(skewer) then
-                    if Menu.GetValue(Magnus.optionSwapMode) == 0 then
+                if Mana > skewerManaCost then
+                    if Menu.GetValue(Magnus.optionBlinkSkewerMode) == 0 then
                         local enemyTable = Entity.GetHeroesInRadius(myHero, 1100 + Ability.GetCastRange(blink), Enum.TeamType.TEAM_ENEMY)
                         for i, enemy in ipairs(enemyTable) do
                             if enemy then
                                 if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange, 0) then
                                     local distance = (Magnus.PredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Length2D()
                                     Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (Magnus.PredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 55))
-                                    if Menu.IsEnabled(Magnus.optionSwapShockwave) then
-                                        if Mana > Ability.GetManaCost(shockwave) + Ability.GetManaCost(skewer) then
+                                    if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
+                                        if Mana > shockwaveManaCost + skewerManaCost then
                                             for i=5,1,-1 do 
                                                 Ability.CastTarget(shockwave, enemy)
                                             end
@@ -112,23 +131,23 @@ function Magnus.OnUpdate()
                                     else
                                         Ability.CastPosition(skewer, prevPos)
                                     end
-                                    swap = not swap
+                                    BlinkSkewerToggle = not BlinkSkewerToggle
                                     Particle.Destroy(skewerParticle)
                                     Particle.Destroy(circle1)
                                 end
                             end
                         end
                     end
-                    if Menu.GetValue(Magnus.optionSwapMode) == 1 then
-                        enemy = Input.GetNearestHeroToCursor(Entity.GetTeamNum(myHero), Enum.TeamType.TEAM_ENEMY)
+                    if Menu.GetValue(Magnus.optionBlinkSkewerMode) == 1 then
+                        enemy = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
                         if enemy then
                             if NPC.IsPositionInRange(enemy, Input.GetWorldCursorPos(), 150, 0) then
                                 if NPC.IsPositionInRange(myHero, Magnus.PredictedPosition(enemy, 0.4), 1100 + Ability.GetCastRange(blink), 0) then
                                     if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange, 0) then
                                         local distance = (Magnus.PredictedPosition(enemy, 0.4) - Entity.GetAbsOrigin(myHero)):Length2D()
                                         Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (Magnus.PredictedPosition(enemy, 0.4) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 55))
-                                        if Menu.IsEnabled(Magnus.optionSwapShockwave) then
-                                            if Mana > Ability.GetManaCost(shockwave) + Ability.GetManaCost(skewer) then
+                                        if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
+                                            if Mana > shockwaveManaCost + skewerManaCost then
                                                 for i=5,1,-1 do 
                                                     Ability.CastTarget(shockwave, enemy)
                                                 end
@@ -141,7 +160,7 @@ function Magnus.OnUpdate()
                                         else
                                             Ability.CastPosition(skewer, prevPos)
                                         end
-                                        swap = not swap
+                                        BlinkSkewerToggle = not BlinkSkewerToggle
                                         Particle.Destroy(skewerParticle)
                                         Particle.Destroy(circle1) 
                                     end
@@ -154,7 +173,7 @@ function Magnus.OnUpdate()
         end
     end
     if Menu.IsKeyDownOnce(Magnus.optionAutoRPToMouse) then
-        local dir = Input.GetWorldCursorPos()
+        local mousePos = Input.GetWorldCursorPos()
         if Ability.IsReady(blink) then
             if Ability.IsReady(RP) then
                 local RP_radius = 380
@@ -165,11 +184,11 @@ function Magnus.OnUpdate()
                 local enemyHeroes = Entity.GetHeroesInRadius(myHero, blink_radius, Enum.TeamType.TEAM_ENEMY)
                 local pos = Magnus.BestBlinkPosition(enemyHeroes, RP_radius)
                 local immune = false
-                local minMana = Ability.GetManaCost(RP) + Ability.GetManaCost(shockwave) + Ability.GetManaCost(skewer)
+                local minMana = RPManaCost + shockwaveManaCost + skewerManaCost
                 if pos then 
                     if Mana > minMana then
                         local count = 0
-                        local enemiesUnderRP = Heroes.InRadius(pos, RP_radius, Entity.GetTeamNum(myHero), Enum.TeamType.TEAM_ENEMY)
+                        local enemiesUnderRP = Heroes.InRadius(pos, RP_radius, myTeam, Enum.TeamType.TEAM_ENEMY)
                         for i,enemy in pairs(enemiesUnderRP) do
                             if enemy ~= nil and Entity.IsHero(enemy) and not Entity.IsSameTeam(myHero, enemy) and Entity.IsAlive(enemy) and not Entity.IsDormant(enemy) and not NPC.IsIllusion(enemy) then
                                 count = count + 1
@@ -197,7 +216,7 @@ function Magnus.OnUpdate()
                                     if item == "item_spider_legs" then
                                         Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
                                     end
-                                    if Mana > minMana + Ability.GetManaCost(HornToss) + 100 then
+                                    if Mana > minMana + HornTossManaCost + 100 then
                                         if item ~= "item_minotaur_horn" and item ~= "item_black_king_bar" then
                                             Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
                                         end
@@ -205,7 +224,6 @@ function Magnus.OnUpdate()
                                 end
                             end
                             Ability.CastPosition(blink, pos)
-                            --спам ордерами =) ( не умею сбивать анимки =( )
                             if Ability.GetName(blink) == "item_fallen_sky" then
                                 for i=20,1,-1 do 
                                     Ability.CastNoTarget(RP)
@@ -216,7 +234,7 @@ function Magnus.OnUpdate()
                                 end
                             end
                             if Menu.IsEnabled(Magnus.optionHornTossMode) then
-                                if Mana > minMana + Ability.GetManaCost(HornToss) then
+                                if Mana > minMana + HornTossManaCost then
                                     for i=15,1,-1 do 
                                         Ability.CastNoTarget(HornToss)
                                     end
@@ -226,7 +244,7 @@ function Magnus.OnUpdate()
                                 Ability.CastTarget(shockwave, enemiesUnderRP[1])
                             end
                             for i=10,1,-1 do 
-                                Ability.CastPosition(skewer, dir)
+                                Ability.CastPosition(skewer, mousePos)
                             end
                         end
                     end
