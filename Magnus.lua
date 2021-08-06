@@ -43,7 +43,7 @@ local Skewerstep = nil
 local BlinkSkewerToggle = false
 local myHero = nil
 local myTeam = nil
-updateHeroPos = false
+local updateHeroPos = false
 local TimerRP = GameRules.GetGameTime();
 local TimerSkewer = GameRules.GetGameTime();
 function Magnus.init()
