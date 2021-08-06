@@ -8,6 +8,7 @@ Magnus.optionBlinkSkewerMode = Menu.AddOptionCombo({"Hero Specific", "Magnus", "
 Magnus.optionBlinkSkewerPointMode = Menu.AddOptionCombo({"Hero Specific", "Magnus", "Blink + Skewer"}, "Blink + Skewer position", {'Hero position', 'Mouse position'}, 1)
 Magnus.optionBlinkSkewerShockwave = Menu.AddOptionBool({"Hero Specific", "Magnus", "Blink + Skewer"}, "Use Shockwave", false)
 Magnus.optionBlinkSkewerToggle = Menu.AddKeyOption({"Hero Specific", "Magnus", "Blink + Skewer"}, "Blink + Skewer key", Enum.ButtonCode.BUTTON_CODE_NONE)
+Magnus.optionDrawPosRP = Menu.AddOptionBool({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "Draw RP position", false)
 Magnus.minEnemiesRP = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "Minimum enemies", 1, 5, 3)
 Magnus.optionAutoRPToMouse = Menu.AddKeyOption({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "Blink + RP + Skewer to mouse", Enum.ButtonCode.BUTTON_CODE_NONE)
 Magnus.optionHornTossMode = Menu.AddOptionBool({"Hero Specific", "Magnus", "Horn Toss"}, "Use Horn Toss", true)
@@ -17,6 +18,7 @@ Magnus.optionPositionY = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Setti
 Menu.AddMenuIcon({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "panorama/images/spellicons/magnataur_reverse_polarity_png.vtex_c")
 Menu.AddOptionIcon(Magnus.optionFallenSkyAsBlink, "panorama/images/items/fallen_sky_png.vtex_c")
 Menu.AddOptionIcon(Magnus.optionBlinkSkewerShockwave, 'panorama/images/spellicons/magnataur_shockwave_png.vtex_c')
+Menu.AddOptionIcon(Magnus.optionDrawPosRP, '~/MenuIcons/map_points.png')
 Menu.AddMenuIcon({"Hero Specific", "Magnus"}, 'panorama/images/heroes/icons/npc_dota_hero_magnataur_png.vtex_c')
 Menu.AddMenuIcon({"Hero Specific", "Magnus", "Blink + Skewer"}, "panorama/images/spellicons/magnataur_skewer_png.vtex_c")
 Menu.AddMenuIcon({"Hero Specific", "Magnus", "Horn Toss"}, 'panorama/images/spellicons/magnataur_horn_toss_png.vtex_c')
@@ -37,12 +39,14 @@ Magnus.RPitems = Menu.AddOptionMultiSelect({"Hero Specific", "Magnus", "Blink + 
 }, false)
 
 Magnus.font = Renderer.LoadFont("Tahoma", 30, Enum.FontWeight.EXTRABOLD)
+local drawParticleCreateFlag = nil
 local CastingRP = false
 local RPstep = nil
 local Skewerstep = nil
 local BlinkSkewerToggle = false
 local myHero = nil
 local myTeam = nil
+local drawParticle = nil
 local updateHeroPos = false
 local TimerRP = GameRules.GetGameTime();
 local TimerSkewer = GameRules.GetGameTime();
@@ -83,6 +87,12 @@ end
 function Magnus.OnUpdate()
     if not Menu.IsEnabled(Magnus.optionEnabled) then return end
     if not myHero then return end
+    if Menu.IsEnabled(Magnus.optionDrawPosRP) then
+        if drawParticleCreateFlag == nil then  -- needs some changes
+            drawParticle = Particle.Create("particles/ui_mouseactions/range_display.vpcf")
+            drawParticleCreateFlag = true
+        end
+    end
     local Mana = NPC.GetMana(myHero)
     local GameTime = GameRules.GetGameTime();
     local blink = MagnusBlink(myHero)
@@ -96,6 +106,35 @@ function Magnus.OnUpdate()
     local shockwaveManaCost = Ability.GetManaCost(shockwave)
     local RPManaCost = Ability.GetManaCost(RP)
     local HornTossManaCost = Ability.GetManaCost(HornToss)
+    if Menu.IsEnabled(Magnus.optionDrawPosRP) then --UNOPTIMIZED
+        if Ability.IsReady(RP) and Ability.GetLevel(RP) > 0 then
+            local blink_radius = 1150 + Ability.GetCastRange(blink)
+            if Ability.GetName(blink) == "item_fallen_sky" then
+                blink_radius = Ability.GetCastRange(blink)
+            end
+            local enemyHeroes = Entity.GetHeroesInRadius(myHero, blink_radius, Enum.TeamType.TEAM_ENEMY)
+            posToDraw = Magnus.BestBlinkPosition(enemyHeroes, 380)
+            if posToDraw then
+                Particle.SetControlPoint(drawParticle, 0, posToDraw)
+                Particle.SetControlPoint(drawParticle, 1, Vector(380,0,0));
+                local xDrawPos, yDrawPos, visible = Renderer.WorldToScreen(posToDraw)
+                local count = 0
+                local enemiesUnderRP = Heroes.InRadius(posToDraw, 380, myTeam, Enum.TeamType.TEAM_ENEMY)
+                for i,enemy in pairs(enemiesUnderRP) do
+                    if enemy ~= nil and Entity.IsHero(enemy) and not Entity.IsSameTeam(myHero, enemy) and Entity.IsAlive(enemy) and not Entity.IsDormant(enemy) and not NPC.IsIllusion(enemy) then
+                        count = count + 1
+                    end
+                end
+                Renderer.DrawText(Magnus.font, xDrawPos - 10, yDrawPos - 10, count)
+            else
+                Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0)) -- needs some changes
+            end
+        else
+            Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0))-- needs some changes
+        end
+    else
+        Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0))-- needs some changes
+    end
     if talent425 and Ability.GetLevel(talent425) > 0 then
         skewer_castrange = Ability.GetLevelSpecialValueFor(skewer, "range") + Ability.GetCastRange(skewer) + 425
     end
