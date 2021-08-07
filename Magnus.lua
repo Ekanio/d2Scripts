@@ -321,7 +321,7 @@ function Magnus.OnUpdate()
         if Mana > skewerManaCost then
             if Menu.GetValue(Magnus.optionBlinkSkewerMode) == 0 then
                 local enemyTable = Entity.GetHeroesInRadius(myHero, 1100 + Ability.GetCastRange(blink), Enum.TeamType.TEAM_ENEMY)
-                for i, enemy in ipairs(enemyTable) do
+                for i, enemy in pairs(enemyTable) do
                     if enemy then
                         if not Entity.IsAlive(myHero) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_ROOTED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_SILENCED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_MUTED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_STUNNED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_HEXED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_NIGHTMARED) or NPC.HasModifier(myHero, "modifier_teleporting") then return end
                         if Entity.IsDormant(enemy) or not Entity.IsAlive(enemy) or NPC.IsStructure(enemy) or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then return end
@@ -560,7 +560,7 @@ function Magnus.OnUpdate()
                 end
                 if count >= Menu.GetValue(Magnus.minEnemiesRP) then
                     if RPstep == 0 then
-                        for i, item in ipairs(Menu.GetItems(Magnus.RPitems)) do
+                        for i, item in pairs(Menu.GetItems(Magnus.RPitems)) do
                             if Ability.IsReady(NPC.GetItem(myHero, tostring(item))) then
                                 Log.Write(tostring(item))
                                 if item == "item_minotaur_horn" then
