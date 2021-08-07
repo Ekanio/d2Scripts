@@ -39,6 +39,18 @@ Magnus.RPitems = Menu.AddOptionMultiSelect({"Hero Specific", "Magnus", "Blink + 
 }, false)
 
 Magnus.font = Renderer.LoadFont("Tahoma", 30, Enum.FontWeight.EXTRABOLD)
+local blink = nil
+local shockwave = nil
+local skewer = nil
+local RP = nil
+local HornToss = nil
+local talent425 = nil
+local skewer_castrange = nil
+local skewerManaCost = nil
+local shockwaveManaCost = nil
+local RPManaCost = nil
+local HornTossManaCost = nil
+
 local countDraw = 0
 local drawParticleCreateFlag = nil
 local CastingRP = false
@@ -50,19 +62,154 @@ local myTeam = nil
 local drawParticle = nil
 local updateHeroPos = false
 local TimerRP = GameRules.GetGameTime();
+local TimerUpdate = GameRules.GetGameTime();
 local TimerSkewer = GameRules.GetGameTime();
-function Magnus.init()
+
+--LIBS
+
+local function MagnusGetStunTimeLeft(npc)
+    local mod = NPC.GetModifier(npc, "modifier_stunned")
+    if not mod then return 0 end
+    return math.max(Modifier.GetDieTime(mod) - GameRules.GetGameTime(), 0)
+end
+
+local function MagnusGetMoveSpeed(npc)
+    local base_speed = NPC.GetBaseSpeed(npc)
+    local bonus_speed = NPC.GetMoveSpeed(npc) - NPC.GetBaseSpeed(npc)
+
+    if NPC.HasModifier(npc, "modifier_invoker_ice_wall_slow_debuff") then return 100 end
+
+    if NPC.HasModifier(npc, "modifier_item_diffusal_blade_slow") then return 100 end
+
+    if MagnusGetHexTimeLeft(npc) > 0 then return 140 + bonus_speed end
+
+    return base_speed + bonus_speed
+end
+
+local function MagnusCantMove(npc)
+    if not npc then return false end
+
+    if MagnusGetStunTimeLeft(npc) >= 1 then return true end
+    if NPC.HasModifier(npc, "modifier_axe_berserkers_call") then return true end
+    if NPC.HasModifier(npc, "modifier_legion_commander_duel") then return true end
+
+    return false
+end
+
+local function MagnusGetHexTimeLeft(npc)
+    local mod
+    local mod1 = NPC.GetModifier(npc, "modifier_sheepstick_debuff")
+    local mod2 = NPC.GetModifier(npc, "modifier_lion_voodoo")
+    local mod3 = NPC.GetModifier(npc, "modifier_shadow_shaman_voodoo")
+
+    if mod1 then mod = mod1 end
+    if mod2 then mod = mod2 end
+    if mod3 then mod = mod3 end
+
+    if not mod then return 0 end
+    return math.max(Modifier.GetDieTime(mod) - GameRules.GetGameTime(), 0)
+end
+
+local function MagnusBlink(myHero)
+    defblink = NPC.GetItem(myHero, "item_blink")
+    overblink = NPC.GetItem(myHero, "item_overwhelming_blink")
+    arcaneblink = NPC.GetItem(myHero, "item_arcane_blink")
+    swiftblink = NPC.GetItem(myHero, "item_swift_blink")
+    fallensky = NPC.GetItem(myHero, "item_fallen_sky")
+    if Ability.IsReady(defblink) then
+        blink = defblink
+    end
+    if Ability.IsReady(overblink) then
+        blink = overblink
+    end
+    if Ability.IsReady(arcaneblink) then
+        blink = arcaneblink
+    end
+    if Ability.IsReady(swiftblink) then
+        blink = swiftblink
+    end
+    if Menu.IsEnabled(Magnus.optionFallenSkyAsBlink) then
+        if Ability.IsReady(fallensky) then
+            blink = fallensky
+        end 
+    end
+    return blink
+end
+
+local function MagnusUpdateInfo()
+    blink = MagnusBlink(myHero)
+    shockwave = NPC.GetAbility(myHero, "magnataur_shockwave")
+    skewer = NPC.GetAbility(myHero, "magnataur_skewer")
+    RP = NPC.GetAbility(myHero, "magnataur_reverse_polarity")
+    HornToss = NPC.GetAbility(myHero, "magnataur_horn_toss")
+    talent425 = NPC.GetAbility(myHero, "special_bonus_unique_magnus_3")
+    skewer_castrange = Ability.GetLevelSpecialValueFor(skewer, "range") + Ability.GetCastRange(skewer)
+    skewerManaCost = Ability.GetManaCost(skewer)
+    shockwaveManaCost = Ability.GetManaCost(shockwave)
+    RPManaCost = Ability.GetManaCost(RP)
+    HornTossManaCost = Ability.GetManaCost(HornToss)
+end
+
+local function MagnusBestBlinkPosition(unitsAround, radius)
+    if not unitsAround or #unitsAround <= 0 then return nil end
+    local enemyNum = #unitsAround
+
+	if enemyNum == 1 then return Entity.GetAbsOrigin(unitsAround[1]) end
+
+	local maxNum = 1
+	local bestPos = Entity.GetAbsOrigin(unitsAround[1])
+	for i = 1, enemyNum-1 do
+		for j = i+1, enemyNum do
+			if unitsAround[i] and unitsAround[j] then
+				local pos1 = Entity.GetAbsOrigin(unitsAround[i])
+				local pos2 = Entity.GetAbsOrigin(unitsAround[j])
+				local mid = pos1:__add(pos2):Scaled(0.5)
+
+				local heroesNum = 0
+				for k = 1, enemyNum do
+					if NPC.IsPositionInRange(unitsAround[k], mid, radius, 0) then
+						heroesNum = heroesNum + 1
+					end
+				end
+
+				if heroesNum > maxNum then
+					maxNum = heroesNum
+					bestPos = mid
+				end
+
+			end
+		end
+	end
+
+	return bestPos
+end
+
+local function MagnusPredictedPosition(npc, delay)
+    local pos = Entity.GetAbsOrigin(npc)
+    if MagnusCantMove(npc) then return pos end
+    if not NPC.IsRunning(npc) or not delay then return pos end
+
+    local dir = Entity.GetRotation(npc):GetForward():Normalized()
+    local speed = MagnusGetMoveSpeed(npc)
+
+    return pos + dir:Scaled(speed * delay)
+end
+
+--LIBS END
+
+local function MagnusInit()
     if Engine.IsInGame() then
         if NPC.GetUnitName(Heroes.GetLocal()) == "npc_dota_hero_magnataur" then
             myHero = Heroes.GetLocal()
             myTeam = Entity.GetTeamNum(myHero)
+            MagnusUpdateInfo()
         end;
     end;
 end;
 
-Magnus.init();
+MagnusInit();
 function Magnus.OnGameStart()
-    Magnus.init();
+    MagnusInit();
 end;
 
 function Magnus.OnDraw()
@@ -90,22 +237,15 @@ function Magnus.OnUpdate()
     if not myHero then return end
     local Mana = NPC.GetMana(myHero)
     local GameTime = GameRules.GetGameTime();
-    local blink = MagnusBlink(myHero)
-    local shockwave = NPC.GetAbility(myHero, "magnataur_shockwave")
-    local skewer = NPC.GetAbility(myHero, "magnataur_skewer")
-    local RP = NPC.GetAbility(myHero, "magnataur_reverse_polarity")
-    local HornToss = NPC.GetAbility(myHero, "magnataur_horn_toss")
-    local talent425 = NPC.GetAbility(myHero, "special_bonus_unique_magnus_3")
-    local skewer_castrange = Ability.GetLevelSpecialValueFor(skewer, "range") + Ability.GetCastRange(skewer)
-    local skewerManaCost = Ability.GetManaCost(skewer)
-    local shockwaveManaCost = Ability.GetManaCost(shockwave)
-    local RPManaCost = Ability.GetManaCost(RP)
-    local HornTossManaCost = Ability.GetManaCost(HornToss)
+    if TimerUpdate <= GameTime then
+        TimerUpdate = GameTime + 0.4;
+        MagnusUpdateInfo()
+    end
     if Menu.IsEnabled(Magnus.optionDrawPosRP) then
         if countDraw >= 1 then
             if Ability.IsReady(RP) and Ability.GetLevel(RP) > 0 then
                 if Ability.IsReady(blink) then
-                    if drawParticleCreateFlag == nil then  -- needs some changes
+                    if drawParticleCreateFlag == nil then
                         drawParticle = Particle.Create("particles/ui_mouseactions/range_display.vpcf")
                         drawParticleCreateFlag = true
                     end
@@ -113,7 +253,7 @@ function Magnus.OnUpdate()
             end
         end
     end
-    if Menu.IsEnabled(Magnus.optionDrawPosRP) then --UNOPTIMIZED
+    if Menu.IsEnabled(Magnus.optionDrawPosRP) then
         if Ability.IsReady(RP) and Ability.GetLevel(RP) > 0 then
             if Ability.IsReady(blink) then
                 local blink_radius = 1150 + Ability.GetCastRange(blink)
@@ -121,7 +261,7 @@ function Magnus.OnUpdate()
                     blink_radius = Ability.GetCastRange(blink)
                 end
                 local enemyHeroes = Entity.GetHeroesInRadius(myHero, blink_radius, Enum.TeamType.TEAM_ENEMY)
-                posToDraw = Magnus.BestBlinkPosition(enemyHeroes, 380)
+                posToDraw = MagnusBestBlinkPosition(enemyHeroes, 380)
                 if posToDraw then
                     Particle.SetControlPoint(drawParticle, 0, posToDraw)
                     Particle.SetControlPoint(drawParticle, 1, Vector(380,0,0));
@@ -136,16 +276,16 @@ function Magnus.OnUpdate()
                     Renderer.SetDrawColor(255, 255, 255, 225)
                     Renderer.DrawText(Magnus.font, xDrawPos - 10, yDrawPos - 10, countDraw)
                 else
-                    Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0)) -- needs some changes
+                    Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0))
                 end
             else
-                Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0))-- needs some changes
+                Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0))
             end
         else
-            Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0))-- needs some changes
+            Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0))
         end
     else
-        Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0))-- needs some changes
+        Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0))
     end
     if talent425 and Ability.GetLevel(talent425) > 0 then
         skewer_castrange = Ability.GetLevelSpecialValueFor(skewer, "range") + Ability.GetCastRange(skewer) + 425
@@ -202,11 +342,11 @@ function Magnus.OnUpdate()
                             end
                         end
                         if continueCasting then
-                            local distance = (Magnus.PredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Length2D()
-                            if Ability.IsReady(blink) then
+                            local distance = (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Length2D()
+                            if Ability.IsReady(blink) and Ability.IsReady(skewer) then
                                 if Skewerstep == 0 then
                                     updateHeroPos = false
-                                    Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (Magnus.PredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 55))
+                                    Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 55))
                                     if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
                                         Skewerstep = 1
                                     else
@@ -279,7 +419,7 @@ function Magnus.OnUpdate()
                 if enemy then
                     if not Entity.IsAlive(myHero) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_ROOTED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_SILENCED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_MUTED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_STUNNED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_HEXED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_NIGHTMARED) or NPC.HasModifier(myHero, "modifier_teleporting") then return end
                     if Entity.IsDormant(enemy) or not Entity.IsAlive(enemy) or NPC.IsStructure(enemy) or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then return end
-                    if NPC.IsPositionInRange(myHero, Magnus.PredictedPosition(enemy, 0.4), 1100 + Ability.GetCastRange(blink), 0) then
+                    if NPC.IsPositionInRange(myHero, MagnusPredictedPosition(enemy, 0.4), 1100 + Ability.GetCastRange(blink), 0) then
                         continueCasting = false
                         if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
                             if Ability.IsReady(shockwave) then
@@ -297,12 +437,12 @@ function Magnus.OnUpdate()
                             end
                         end
                         if continueCasting then
-                            local distance = (Magnus.PredictedPosition(enemy, 0.4) - Entity.GetAbsOrigin(myHero)):Length2D()
-                            if Ability.IsReady(blink) then
+                            local distance = (MagnusPredictedPosition(enemy, 0.4) - Entity.GetAbsOrigin(myHero)):Length2D()
+                            if Ability.IsReady(blink) and Ability.IsReady(skewer) then
                                 if Skewerstep == 0 then
                                     if NPC.IsPositionInRange(enemy, Input.GetWorldCursorPos(), 250, 0) then
                                         updateHeroPos = false
-                                        Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (Magnus.PredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 55))
+                                        Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 55))
                                         if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
                                             Skewerstep = 1
                                         else
@@ -397,7 +537,7 @@ function Magnus.OnUpdate()
             blink_radius = Ability.GetCastRange(blink)
         end
         local enemyHeroes = Entity.GetHeroesInRadius(myHero, blink_radius, Enum.TeamType.TEAM_ENEMY)
-        local pos = Magnus.BestBlinkPosition(enemyHeroes, RP_radius)
+        local pos = MagnusBestBlinkPosition(enemyHeroes, RP_radius)
         local immune = false
         local minMana = 0
         if Ability.IsReady(RP) then
@@ -512,127 +652,11 @@ function Magnus.OnUpdate()
     end
 end
 
-function MagnusBlink(myHero)
-    defblink = NPC.GetItem(myHero, "item_blink")
-    overblink = NPC.GetItem(myHero, "item_overwhelming_blink")
-    arcaneblink = NPC.GetItem(myHero, "item_arcane_blink")
-    swiftblink = NPC.GetItem(myHero, "item_swift_blink")
-    fallensky = NPC.GetItem(myHero, "item_fallen_sky")
-    if Ability.IsReady(defblink) then
-        blink = defblink
-    end
-    if Ability.IsReady(overblink) then
-        blink = overblink
-    end
-    if Ability.IsReady(arcaneblink) then
-        blink = arcaneblink
-    end
-    if Ability.IsReady(swiftblink) then
-        blink = swiftblink
-    end
-    if Menu.IsEnabled(Magnus.optionFallenSkyAsBlink) then
-        if Ability.IsReady(fallensky) then
-            blink = fallensky
-        end 
-    end
-    return blink
-end
-
-
 function Magnus.OnPrepareUnitOrders(order)
     if order["order"] == Enum.UnitOrder.DOTA_UNIT_ORDER_HOLD_POSITION then
         RPstep = 0
         Skewerstep = 0
     end
-end
--- libs =)
-
-function Magnus.BestBlinkPosition(unitsAround, radius)
-    if not unitsAround or #unitsAround <= 0 then return nil end
-    local enemyNum = #unitsAround
-
-	if enemyNum == 1 then return Entity.GetAbsOrigin(unitsAround[1]) end
-
-	local maxNum = 1
-	local bestPos = Entity.GetAbsOrigin(unitsAround[1])
-	for i = 1, enemyNum-1 do
-		for j = i+1, enemyNum do
-			if unitsAround[i] and unitsAround[j] then
-				local pos1 = Entity.GetAbsOrigin(unitsAround[i])
-				local pos2 = Entity.GetAbsOrigin(unitsAround[j])
-				local mid = pos1:__add(pos2):Scaled(0.5)
-
-				local heroesNum = 0
-				for k = 1, enemyNum do
-					if NPC.IsPositionInRange(unitsAround[k], mid, radius, 0) then
-						heroesNum = heroesNum + 1
-					end
-				end
-
-				if heroesNum > maxNum then
-					maxNum = heroesNum
-					bestPos = mid
-				end
-
-			end
-		end
-	end
-
-	return bestPos
-end
-
-function Magnus.PredictedPosition(npc, delay)
-    local pos = Entity.GetAbsOrigin(npc)
-    if Magnus.CantMove(npc) then return pos end
-    if not NPC.IsRunning(npc) or not delay then return pos end
-
-    local dir = Entity.GetRotation(npc):GetForward():Normalized()
-    local speed = Magnus.GetMoveSpeed(npc)
-
-    return pos + dir:Scaled(speed * delay)
-end
-
-function Magnus.GetMoveSpeed(npc)
-    local base_speed = NPC.GetBaseSpeed(npc)
-    local bonus_speed = NPC.GetMoveSpeed(npc) - NPC.GetBaseSpeed(npc)
-
-    if NPC.HasModifier(npc, "modifier_invoker_ice_wall_slow_debuff") then return 100 end
-
-    if NPC.HasModifier(npc, "modifier_item_diffusal_blade_slow") then return 100 end
-
-    if Magnus.GetHexTimeLeft(npc) > 0 then return 140 + bonus_speed end
-
-    return base_speed + bonus_speed
-end
-
-function Magnus.CantMove(npc)
-    if not npc then return false end
-
-    if Magnus.GetStunTimeLeft(npc) >= 1 then return true end
-    if NPC.HasModifier(npc, "modifier_axe_berserkers_call") then return true end
-    if NPC.HasModifier(npc, "modifier_legion_commander_duel") then return true end
-
-    return false
-end
-
-function Magnus.GetHexTimeLeft(npc)
-    local mod
-    local mod1 = NPC.GetModifier(npc, "modifier_sheepstick_debuff")
-    local mod2 = NPC.GetModifier(npc, "modifier_lion_voodoo")
-    local mod3 = NPC.GetModifier(npc, "modifier_shadow_shaman_voodoo")
-
-    if mod1 then mod = mod1 end
-    if mod2 then mod = mod2 end
-    if mod3 then mod = mod3 end
-
-    if not mod then return 0 end
-    return math.max(Modifier.GetDieTime(mod) - GameRules.GetGameTime(), 0)
-end
-
-function Magnus.GetStunTimeLeft(npc)
-    local mod = NPC.GetModifier(npc, "modifier_stunned")
-    if not mod then return 0 end
-    return math.max(Modifier.GetDieTime(mod) - GameRules.GetGameTime(), 0)
 end
 
 return Magnus
