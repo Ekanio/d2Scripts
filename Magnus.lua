@@ -39,6 +39,7 @@ Magnus.RPitems = Menu.AddOptionMultiSelect({"Hero Specific", "Magnus", "Blink + 
 }, false)
 
 Magnus.font = Renderer.LoadFont("Tahoma", 30, Enum.FontWeight.EXTRABOLD)
+local countDraw = 0
 local drawParticleCreateFlag = nil
 local CastingRP = false
 local RPstep = nil
@@ -87,12 +88,6 @@ end
 function Magnus.OnUpdate()
     if not Menu.IsEnabled(Magnus.optionEnabled) then return end
     if not myHero then return end
-    if Menu.IsEnabled(Magnus.optionDrawPosRP) then
-        if drawParticleCreateFlag == nil then  -- needs some changes
-            drawParticle = Particle.Create("particles/ui_mouseactions/range_display.vpcf")
-            drawParticleCreateFlag = true
-        end
-    end
     local Mana = NPC.GetMana(myHero)
     local GameTime = GameRules.GetGameTime();
     local blink = MagnusBlink(myHero)
@@ -106,28 +101,45 @@ function Magnus.OnUpdate()
     local shockwaveManaCost = Ability.GetManaCost(shockwave)
     local RPManaCost = Ability.GetManaCost(RP)
     local HornTossManaCost = Ability.GetManaCost(HornToss)
-    if Menu.IsEnabled(Magnus.optionDrawPosRP) then --UNOPTIMIZED
-        if Ability.IsReady(RP) and Ability.GetLevel(RP) > 0 then
-            local blink_radius = 1150 + Ability.GetCastRange(blink)
-            if Ability.GetName(blink) == "item_fallen_sky" then
-                blink_radius = Ability.GetCastRange(blink)
-            end
-            local enemyHeroes = Entity.GetHeroesInRadius(myHero, blink_radius, Enum.TeamType.TEAM_ENEMY)
-            posToDraw = Magnus.BestBlinkPosition(enemyHeroes, 380)
-            if posToDraw then
-                Particle.SetControlPoint(drawParticle, 0, posToDraw)
-                Particle.SetControlPoint(drawParticle, 1, Vector(380,0,0));
-                local xDrawPos, yDrawPos, visible = Renderer.WorldToScreen(posToDraw)
-                local count = 0
-                local enemiesUnderRP = Heroes.InRadius(posToDraw, 380, myTeam, Enum.TeamType.TEAM_ENEMY)
-                for i,enemy in pairs(enemiesUnderRP) do
-                    if enemy ~= nil and Entity.IsHero(enemy) and not Entity.IsSameTeam(myHero, enemy) and Entity.IsAlive(enemy) and not Entity.IsDormant(enemy) and not NPC.IsIllusion(enemy) then
-                        count = count + 1
+    if Menu.IsEnabled(Magnus.optionDrawPosRP) then
+        if countDraw >= 1 then
+            if Ability.IsReady(RP) and Ability.GetLevel(RP) > 0 then
+                if Ability.IsReady(blink) then
+                    if drawParticleCreateFlag == nil then  -- needs some changes
+                        drawParticle = Particle.Create("particles/ui_mouseactions/range_display.vpcf")
+                        drawParticleCreateFlag = true
                     end
                 end
-                Renderer.DrawText(Magnus.font, xDrawPos - 10, yDrawPos - 10, count)
+            end
+        end
+    end
+    if Menu.IsEnabled(Magnus.optionDrawPosRP) then --UNOPTIMIZED
+        if Ability.IsReady(RP) and Ability.GetLevel(RP) > 0 then
+            if Ability.IsReady(blink) then
+                local blink_radius = 1150 + Ability.GetCastRange(blink)
+                if Ability.GetName(blink) == "item_fallen_sky" then
+                    blink_radius = Ability.GetCastRange(blink)
+                end
+                local enemyHeroes = Entity.GetHeroesInRadius(myHero, blink_radius, Enum.TeamType.TEAM_ENEMY)
+                posToDraw = Magnus.BestBlinkPosition(enemyHeroes, 380)
+                if posToDraw then
+                    Particle.SetControlPoint(drawParticle, 0, posToDraw)
+                    Particle.SetControlPoint(drawParticle, 1, Vector(380,0,0));
+                    local xDrawPos, yDrawPos, visible = Renderer.WorldToScreen(posToDraw)
+                    countDraw = 0
+                    local enemiesUnderRP = Heroes.InRadius(posToDraw, 380, myTeam, Enum.TeamType.TEAM_ENEMY)
+                    for i,enemy in pairs(enemiesUnderRP) do
+                        if enemy ~= nil and Entity.IsHero(enemy) and not Entity.IsSameTeam(myHero, enemy) and Entity.IsAlive(enemy) and not Entity.IsDormant(enemy) and not NPC.IsIllusion(enemy) then
+                            countDraw = countDraw + 1
+                        end
+                    end
+                    Renderer.SetDrawColor(255, 255, 255, 225)
+                    Renderer.DrawText(Magnus.font, xDrawPos - 10, yDrawPos - 10, countDraw)
+                else
+                    Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0)) -- needs some changes
+                end
             else
-                Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0)) -- needs some changes
+                Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0))-- needs some changes
             end
         else
             Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0))-- needs some changes
@@ -174,12 +186,18 @@ function Magnus.OnUpdate()
                         if not Entity.IsAlive(myHero) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_ROOTED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_SILENCED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_MUTED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_STUNNED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_HEXED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_NIGHTMARED) or NPC.HasModifier(myHero, "modifier_teleporting") then return end
                         if Entity.IsDormant(enemy) or not Entity.IsAlive(enemy) or NPC.IsStructure(enemy) or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then return end
                         continueCasting = false
-                        if Ability.IsReady(shockwave) then
-                            if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange, 0) then
-                                continueCasting = true
+                        if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
+                            if Ability.IsReady(shockwave) then
+                                if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange, 0) then
+                                    continueCasting = true
+                                end
+                            else
+                                if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange + 200, 0) then
+                                    continueCasting = true
+                                end
                             end
                         else
-                            if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange + 200, 0) then
+                            if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange + 50, 0) then
                                 continueCasting = true
                             end
                         end
@@ -189,7 +207,11 @@ function Magnus.OnUpdate()
                                 if Skewerstep == 0 then
                                     updateHeroPos = false
                                     Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (Magnus.PredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 55))
-                                    Skewerstep = 1
+                                    if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
+                                        Skewerstep = 1
+                                    else
+                                        Skewerstep = 2
+                                    end
                                 end
                             end
                             if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
@@ -219,18 +241,34 @@ function Magnus.OnUpdate()
                                         end
                                     end
                                 else
-                                    Ability.CastPosition(skewer, prevPos)
-                                    Skewerstep = 0
-                                    BlinkSkewerToggle = false
-                                    Particle.Destroy(skewerParticle)
-                                    Particle.Destroy(circle1)
+                                    if Skewerstep == 2 then
+                                        if Ability.IsReady(skewer) then
+                                            if TimerSkewer <= GameTime then
+                                                TimerSkewer = GameTime + 0.25;
+                                                Ability.CastPosition(skewer, prevPos)
+                                            end
+                                        else
+                                            Skewerstep = 0
+                                            BlinkSkewerToggle = false
+                                            Particle.Destroy(skewerParticle)
+                                            Particle.Destroy(circle1)
+                                        end
+                                    end
                                 end
                             else
-                                Ability.CastPosition(skewer, prevPos)
-                                Skewerstep = 0
-                                BlinkSkewerToggle = false
-                                Particle.Destroy(skewerParticle)
-                                Particle.Destroy(circle1)
+                                if Skewerstep == 2 then
+                                    if Ability.IsReady(skewer) then
+                                        if TimerSkewer <= GameTime then
+                                            TimerSkewer = GameTime + 0.25;
+                                            Ability.CastPosition(skewer, prevPos)
+                                        end
+                                    else
+                                        Skewerstep = 0
+                                        BlinkSkewerToggle = false
+                                        Particle.Destroy(skewerParticle)
+                                        Particle.Destroy(circle1)
+                                    end
+                                end
                             end
                         end
                     end
@@ -243,12 +281,18 @@ function Magnus.OnUpdate()
                     if Entity.IsDormant(enemy) or not Entity.IsAlive(enemy) or NPC.IsStructure(enemy) or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then return end
                     if NPC.IsPositionInRange(myHero, Magnus.PredictedPosition(enemy, 0.4), 1100 + Ability.GetCastRange(blink), 0) then
                         continueCasting = false
-                        if Ability.IsReady(shockwave) then
-                            if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange, 0) then
-                                continueCasting = true
+                        if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
+                            if Ability.IsReady(shockwave) then
+                                if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange, 0) then
+                                    continueCasting = true
+                                end
+                            else
+                                if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange + 200, 0) then
+                                    continueCasting = true
+                                end
                             end
                         else
-                            if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange + 200, 0) then
+                            if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange + 50, 0) then
                                 continueCasting = true
                             end
                         end
@@ -259,7 +303,11 @@ function Magnus.OnUpdate()
                                     if NPC.IsPositionInRange(enemy, Input.GetWorldCursorPos(), 250, 0) then
                                         updateHeroPos = false
                                         Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (Magnus.PredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 55))
-                                        Skewerstep = 1
+                                        if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
+                                            Skewerstep = 1
+                                        else
+                                            Skewerstep = 2
+                                        end
                                     end
                                 end
                             end
@@ -290,18 +338,34 @@ function Magnus.OnUpdate()
                                         end
                                     end
                                 else
-                                    Ability.CastPosition(skewer, prevPos)
-                                    Skewerstep = 0
-                                    BlinkSkewerToggle = false
-                                    Particle.Destroy(skewerParticle)
-                                    Particle.Destroy(circle1)
+                                    if Skewerstep == 2 then
+                                        if Ability.IsReady(skewer) then
+                                            if TimerSkewer <= GameTime then
+                                                TimerSkewer = GameTime + 0.25;
+                                                Ability.CastPosition(skewer, prevPos)
+                                            end
+                                        else
+                                            Skewerstep = 0
+                                            BlinkSkewerToggle = false
+                                            Particle.Destroy(skewerParticle)
+                                            Particle.Destroy(circle1)
+                                        end
+                                    end
                                 end
                             else
-                                Ability.CastPosition(skewer, prevPos)
-                                Skewerstep = 0
-                                BlinkSkewerToggle = false
-                                Particle.Destroy(skewerParticle)
-                                Particle.Destroy(circle1)
+                                if Skewerstep == 2 then
+                                    if Ability.IsReady(skewer) then
+                                        if TimerSkewer <= GameTime then
+                                            TimerSkewer = GameTime + 0.25;
+                                            Ability.CastPosition(skewer, prevPos)
+                                        end
+                                    else
+                                        Skewerstep = 0
+                                        BlinkSkewerToggle = false
+                                        Particle.Destroy(skewerParticle)
+                                        Particle.Destroy(circle1)
+                                    end
+                                end
                             end
                         end
                     end
@@ -472,6 +536,14 @@ function MagnusBlink(myHero)
         end 
     end
     return blink
+end
+
+
+function Magnus.OnPrepareUnitOrders(order)
+    if order["order"] == Enum.UnitOrder.DOTA_UNIT_ORDER_HOLD_POSITION then
+        RPstep = 0
+        Skewerstep = 0
+    end
 end
 -- libs =)
 
