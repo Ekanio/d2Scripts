@@ -319,7 +319,6 @@ function Magnus.OnUpdate()
                 prevPos = Entity.GetAbsOrigin(myHero)
                 Particle.SetControlPoint(skewerParticle, 0, prevPos)
                 Particle.SetControlPoint(circle1, 0, prevPos)
-                Log.Write("1")
             end
         end
         if Mana > skewerManaCost then
@@ -567,7 +566,6 @@ function Magnus.OnUpdate()
                     if RPstep == 0 then
                         for i, item in pairs(Menu.GetItems(Magnus.RPitems)) do
                             if Ability.IsReady(NPC.GetItem(myHero, tostring(item))) then
-                                Log.Write(tostring(item))
                                 if item == "item_minotaur_horn" then
                                     if immune == false then
                                         if not NPC.HasModifier(myHero, "modifier_black_king_bar_immune") then
