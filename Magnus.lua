@@ -73,6 +73,20 @@ local function MagnusGetStunTimeLeft(npc)
     return math.max(Modifier.GetDieTime(mod) - GameRules.GetGameTime(), 0)
 end
 
+local function MagnusGetHexTimeLeft(npc)
+    local mod
+    local mod1 = NPC.GetModifier(npc, "modifier_sheepstick_debuff")
+    local mod2 = NPC.GetModifier(npc, "modifier_lion_voodoo")
+    local mod3 = NPC.GetModifier(npc, "modifier_shadow_shaman_voodoo")
+
+    if mod1 then mod = mod1 end
+    if mod2 then mod = mod2 end
+    if mod3 then mod = mod3 end
+
+    if not mod then return 0 end
+    return math.max(Modifier.GetDieTime(mod) - GameRules.GetGameTime(), 0)
+end
+
 local function MagnusGetMoveSpeed(npc)
     local base_speed = NPC.GetBaseSpeed(npc)
     local bonus_speed = NPC.GetMoveSpeed(npc) - NPC.GetBaseSpeed(npc)
@@ -94,20 +108,6 @@ local function MagnusCantMove(npc)
     if NPC.HasModifier(npc, "modifier_legion_commander_duel") then return true end
 
     return false
-end
-
-local function MagnusGetHexTimeLeft(npc)
-    local mod
-    local mod1 = NPC.GetModifier(npc, "modifier_sheepstick_debuff")
-    local mod2 = NPC.GetModifier(npc, "modifier_lion_voodoo")
-    local mod3 = NPC.GetModifier(npc, "modifier_shadow_shaman_voodoo")
-
-    if mod1 then mod = mod1 end
-    if mod2 then mod = mod2 end
-    if mod3 then mod = mod3 end
-
-    if not mod then return 0 end
-    return math.max(Modifier.GetDieTime(mod) - GameRules.GetGameTime(), 0)
 end
 
 local function MagnusBlink(myHero)
