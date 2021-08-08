@@ -276,16 +276,20 @@ function Magnus.OnUpdate()
                     Renderer.SetDrawColor(255, 255, 255, 225)
                     Renderer.DrawText(Magnus.font, xDrawPos - 10, yDrawPos - 10, countDraw)
                 else
-                    Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0))
+                    Particle.Destroy(drawParticle)
+                    drawParticleCreateFlag = nil
                 end
             else
-                Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0))
+                Particle.Destroy(drawParticle)
+                drawParticleCreateFlag = nil
             end
         else
-            Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0))
+            Particle.Destroy(drawParticle)
+            drawParticleCreateFlag = nil
         end
     else
-        Particle.SetControlPoint(drawParticle, 0, Vector(123123,0,0))
+        Particle.Destroy(drawParticle)
+        drawParticleCreateFlag = nil
     end
     if talent425 and Ability.GetLevel(talent425) > 0 then
         skewer_castrange = Ability.GetLevelSpecialValueFor(skewer, "range") + Ability.GetCastRange(skewer) + 425
