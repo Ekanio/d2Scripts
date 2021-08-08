@@ -52,7 +52,7 @@ local RPManaCost = nil
 local HornTossManaCost = nil
 
 local countDraw = 0
-local drawParticleCreateFlag = nil
+local drawParticleCreateFlag = false
 local CastingRP = false
 local RPstep = nil
 local Skewerstep = nil
@@ -235,17 +235,17 @@ end
 function Magnus.OnUpdate()
     if not Menu.IsEnabled(Magnus.optionEnabled) then return end
     if not myHero then return end
-    local Mana = NPC.GetMana(myHero)
     local GameTime = GameRules.GetGameTime();
     if TimerUpdate <= GameTime then
         TimerUpdate = GameTime + 0.4;
         MagnusUpdateInfo()
     end
+    local Mana = NPC.GetMana(myHero)
     if Menu.IsEnabled(Magnus.optionDrawPosRP) then
         if countDraw >= 1 then
             if Ability.IsReady(RP) and Ability.GetLevel(RP) > 0 then
                 if Ability.IsReady(blink) then
-                    if drawParticleCreateFlag == nil then
+                    if drawParticleCreateFlag == false then
                         drawParticle = Particle.Create("particles/ui_mouseactions/range_display.vpcf")
                         drawParticleCreateFlag = true
                     end
@@ -276,20 +276,28 @@ function Magnus.OnUpdate()
                     Renderer.SetDrawColor(255, 255, 255, 225)
                     Renderer.DrawText(Magnus.font, xDrawPos - 10, yDrawPos - 10, countDraw)
                 else
-                    Particle.Destroy(drawParticle)
-                    drawParticleCreateFlag = nil
+                    if drawParticleCreateFlag then
+                        Particle.Destroy(drawParticle)
+                        drawParticleCreateFlag = false
+                    end
                 end
             else
-                Particle.Destroy(drawParticle)
-                drawParticleCreateFlag = nil
+                if drawParticleCreateFlag then
+                    Particle.Destroy(drawParticle)
+                    drawParticleCreateFlag = false
+                end
             end
         else
-            Particle.Destroy(drawParticle)
-            drawParticleCreateFlag = nil
+            if drawParticleCreateFlag then
+                Particle.Destroy(drawParticle)
+                drawParticleCreateFlag = false
+            end
         end
     else
-        Particle.Destroy(drawParticle)
-        drawParticleCreateFlag = nil
+        if drawParticleCreateFlag then
+            Particle.Destroy(drawParticle)
+            drawParticleCreateFlag = false
+        end
     end
     if talent425 and Ability.GetLevel(talent425) > 0 then
         skewer_castrange = Ability.GetLevelSpecialValueFor(skewer, "range") + Ability.GetCastRange(skewer) + 425
