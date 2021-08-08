@@ -374,7 +374,7 @@ function Magnus.OnUpdate()
                                     if Skewerstep == 2 then
                                         if Ability.IsReady(skewer) then
                                             if TimerSkewer <= GameTime then
-                                                TimerSkewer = GameTime + 0.4;
+                                                TimerSkewer = GameTime + 0.25;
                                                 Ability.CastPosition(skewer, prevPos)
                                             end
                                         else
