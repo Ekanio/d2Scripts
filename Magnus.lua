@@ -256,11 +256,11 @@ function Magnus.OnUpdate()
     if Menu.IsEnabled(Magnus.optionDrawPosRP) then
         if Ability.IsReady(RP) and Ability.GetLevel(RP) > 0 then
             if Ability.IsReady(blink) then
-                local blink_radius = 1150 + Ability.GetCastRange(blink)
+                local blink_radius = 1200 + Ability.GetCastRange(blink)
                 if Ability.GetName(blink) == "item_fallen_sky" then
                     blink_radius = Ability.GetCastRange(blink)
                 end
-                local enemyHeroes = Entity.GetHeroesInRadius(myHero, blink_radius, Enum.TeamType.TEAM_ENEMY)
+                local enemyHeroes = Entity.GetHeroesInRadius(myHero, blink_radius + 190, Enum.TeamType.TEAM_ENEMY)
                 posToDraw = MagnusBestBlinkPosition(enemyHeroes, 380)
                 if posToDraw then
                     Particle.SetControlPoint(drawParticle, 0, posToDraw)
@@ -547,7 +547,7 @@ function Magnus.OnUpdate()
         if Ability.GetName(blink) == "item_fallen_sky" then
             blink_radius = Ability.GetCastRange(blink)
         end
-        local enemyHeroes = Entity.GetHeroesInRadius(myHero, blink_radius, Enum.TeamType.TEAM_ENEMY)
+        local enemyHeroes = Entity.GetHeroesInRadius(myHero, blink_radius + RP_radius, Enum.TeamType.TEAM_ENEMY)
         local pos = MagnusBestBlinkPosition(enemyHeroes, RP_radius)
         local immune = false
         local minMana = 0
@@ -562,98 +562,100 @@ function Magnus.OnUpdate()
         end
         if pos then 
             if Mana > minMana then
-                if not Entity.IsAlive(myHero) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_ROOTED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_SILENCED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_MUTED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_STUNNED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_HEXED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_NIGHTMARED) or NPC.HasModifier(myHero, "modifier_teleporting") or NPC.HasModifier(myHero, "modifier_pudge_swallow_hide") then return end
-                local count = 0
-                local enemiesUnderRP = Heroes.InRadius(pos, RP_radius, myTeam, Enum.TeamType.TEAM_ENEMY)
-                for i,enemy in pairs(enemiesUnderRP) do
-                    if enemy ~= nil and Entity.IsHero(enemy) and not Entity.IsSameTeam(myHero, enemy) and Entity.IsAlive(enemy) and not Entity.IsDormant(enemy) and not NPC.IsIllusion(enemy) then
-                        count = count + 1
+                if NPC.IsPositionInRange(myHero, pos, blink_radius, 0) then
+                    if not Entity.IsAlive(myHero) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_ROOTED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_SILENCED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_MUTED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_STUNNED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_HEXED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_NIGHTMARED) or NPC.HasModifier(myHero, "modifier_teleporting") or NPC.HasModifier(myHero, "modifier_pudge_swallow_hide") then return end
+                    local count = 0
+                    local enemiesUnderRP = Heroes.InRadius(pos, RP_radius, myTeam, Enum.TeamType.TEAM_ENEMY)
+                    for i,enemy in pairs(enemiesUnderRP) do
+                        if enemy ~= nil and Entity.IsHero(enemy) and not Entity.IsSameTeam(myHero, enemy) and Entity.IsAlive(enemy) and not Entity.IsDormant(enemy) and not NPC.IsIllusion(enemy) then
+                            count = count + 1
+                        end
                     end
-                end
-                if count >= Menu.GetValue(Magnus.minEnemiesRP) then
-                    if RPstep == 0 then
-                        for i, item in pairs(Menu.GetItems(Magnus.RPitems)) do
-                            if Ability.IsReady(NPC.GetItem(myHero, tostring(item))) then
-                                if item == "item_minotaur_horn" then
-                                    if immune == false then
-                                        if not NPC.HasModifier(myHero, "modifier_black_king_bar_immune") then
-                                            Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
-                                            immune = true
+                    if count >= Menu.GetValue(Magnus.minEnemiesRP) then
+                        if RPstep == 0 then
+                            for i, item in pairs(Menu.GetItems(Magnus.RPitems)) do
+                                if Ability.IsReady(NPC.GetItem(myHero, tostring(item))) then
+                                    if item == "item_minotaur_horn" then
+                                        if immune == false then
+                                            if not NPC.HasModifier(myHero, "modifier_black_king_bar_immune") then
+                                                Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
+                                                immune = true
+                                            end
                                         end
                                     end
-                                end
-                                if item == "item_black_king_bar" then
-                                    if immune == false then
-                                        if not NPC.HasModifier(myHero, "modifier_minotaur_horn_immune") then
-                                            Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
-                                            immune = true
+                                    if item == "item_black_king_bar" then
+                                        if immune == false then
+                                            if not NPC.HasModifier(myHero, "modifier_minotaur_horn_immune") then
+                                                Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
+                                                immune = true
+                                            end
                                         end
                                     end
-                                end
-                                if item == "item_spider_legs" then
-                                    Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
-                                end
-                                if item == "item_seer_stone" then
-                                    Ability.CastPosition(NPC.GetItem(myHero, tostring(item)), pos)
-                                end
-                                if Mana > minMana + HornTossManaCost + 250 then
-                                    if item ~= "item_minotaur_horn" and item ~= "item_black_king_bar" then
+                                    if item == "item_spider_legs" then
                                         Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
                                     end
-                                end
-                            end
-                        end
-                        RPstep = 1
-                    end
-                    if RPstep == 1 then
-                        Ability.CastPosition(blink, pos)
-                        RPstep = 2
-                    end
-                    if RPstep == 2 then
-                        if Ability.IsReady(RP) then
-                            if TimerRP <= GameTime then
-                                TimerRP = GameTime + 0.5;
-                                Ability.CastNoTarget(RP)
-                            end
-                        else
-                            RPstep = 3
-                        end
-                    end
-                    if Menu.IsEnabled(Magnus.optionHornTossMode) then
-                        if Ability.IsReady(HornToss) and Ability.GetLevel(HornToss) > 0 then
-                            if RPstep == 3 then
-                                if Mana > minMana + HornTossManaCost then
-                                    if TimerRP <= GameTime then
-                                        TimerRP = GameTime + 0.2;
-                                        Ability.CastNoTarget(HornToss)
+                                    if item == "item_seer_stone" then
+                                        Ability.CastPosition(NPC.GetItem(myHero, tostring(item)), pos)
                                     end
-                                else
-                                    RPstep = 4
+                                    if Mana > minMana + HornTossManaCost + 250 then
+                                        if item ~= "item_minotaur_horn" and item ~= "item_black_king_bar" then
+                                            Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
+                                        end
+                                    end
                                 end
+                            end
+                            RPstep = 1
+                        end
+                        if RPstep == 1 then
+                            Ability.CastPosition(blink, pos)
+                            RPstep = 2
+                        end
+                        if RPstep == 2 then
+                            if Ability.IsReady(RP) then
+                                if TimerRP <= GameTime then
+                                    TimerRP = GameTime + 0.5;
+                                    Ability.CastNoTarget(RP)
+                                end
+                            else
+                                RPstep = 3
+                            end
+                        end
+                        if Menu.IsEnabled(Magnus.optionHornTossMode) then
+                            if Ability.IsReady(HornToss) and Ability.GetLevel(HornToss) > 0 then
+                                if RPstep == 3 then
+                                    if Mana > minMana + HornTossManaCost then
+                                        if TimerRP <= GameTime then
+                                            TimerRP = GameTime + 0.2;
+                                            Ability.CastNoTarget(HornToss)
+                                        end
+                                    else
+                                        RPstep = 4
+                                    end
+                                end
+                            else
+                                RPstep = 4
                             end
                         else
                             RPstep = 4
                         end
-                    else
-                        RPstep = 4
-                    end
-                    if Ability.IsReady(shockwave) then
-                        if RPstep == 4 then
-                            if TimerRP <= GameTime then
-                                TimerRP = GameTime + 0.5;
-                                Ability.CastTarget(shockwave, enemiesUnderRP[1])
+                        if Ability.IsReady(shockwave) then
+                            if RPstep == 4 then
+                                if TimerRP <= GameTime then
+                                    TimerRP = GameTime + 0.5;
+                                    Ability.CastTarget(shockwave, enemiesUnderRP[1])
+                                end
                             end
+                        else
+                            RPstep = 5
                         end
-                    else
-                        RPstep = 5
-                    end
-                    if Ability.IsReady(skewer) then
-                        if RPstep == 5 then
-                            if TimerRP <= GameTime then
-                                TimerRP = GameTime + 0.2;
-                                Ability.CastPosition(skewer, mousePos)
-                                CastingRP = false
-                                RPstep = 0
+                        if Ability.IsReady(skewer) then
+                            if RPstep == 5 then
+                                if TimerRP <= GameTime then
+                                    TimerRP = GameTime + 0.2;
+                                    Ability.CastPosition(skewer, mousePos)
+                                    CastingRP = false
+                                    RPstep = 0
+                                end
                             end
                         end
                     end
