@@ -11,19 +11,6 @@ Magnus.optionBlinkSkewerToggle = Menu.AddKeyOption({"Hero Specific", "Magnus", "
 Magnus.optionDrawPosRP = Menu.AddOptionBool({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "Draw RP position", false)
 Magnus.minEnemiesRP = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "Minimum enemies", 1, 5, 3)
 Magnus.optionAutoRPToMouse = Menu.AddKeyOption({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "Blink + RP + Skewer to mouse", Enum.ButtonCode.BUTTON_CODE_NONE)
-Magnus.optionHornTossMode = Menu.AddOptionBool({"Hero Specific", "Magnus", "Horn Toss"}, "Use Horn Toss", true)
-Magnus.optionFallenSkyAsBlink = Menu.AddOptionBool({"Hero Specific", "Magnus", "Settings"}, "Use Fallen Sky as blink", false)
-Magnus.optionPositionX = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Settings"}, "Blink + Skewer info position X", 0, ScreenWidth, 1680)
-Magnus.optionPositionY = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Settings"}, "Blink + Skewer info position Y", 0, ScreenHeight, 50)
-Menu.AddMenuIcon({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "panorama/images/spellicons/magnataur_reverse_polarity_png.vtex_c")
-Menu.AddOptionIcon(Magnus.optionFallenSkyAsBlink, "panorama/images/items/fallen_sky_png.vtex_c")
-Menu.AddOptionIcon(Magnus.optionBlinkSkewerShockwave, 'panorama/images/spellicons/magnataur_shockwave_png.vtex_c')
-Menu.AddOptionIcon(Magnus.optionDrawPosRP, '~/MenuIcons/map_points.png')
-Menu.AddMenuIcon({"Hero Specific", "Magnus"}, 'panorama/images/heroes/icons/npc_dota_hero_magnataur_png.vtex_c')
-Menu.AddMenuIcon({"Hero Specific", "Magnus", "Blink + Skewer"}, "panorama/images/spellicons/magnataur_skewer_png.vtex_c")
-Menu.AddMenuIcon({"Hero Specific", "Magnus", "Horn Toss"}, 'panorama/images/spellicons/magnataur_horn_toss_png.vtex_c')
-Menu.AddMenuIcon({"Hero Specific", "Magnus", "Settings"}, "~/MenuIcons/ellipsis.png")
-
 Magnus.RPitems = Menu.AddOptionMultiSelect({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "Items:", 
 {
     {"item_seer_stone", "panorama/images/items/seer_stone_png.vtex_c", true},
@@ -37,8 +24,26 @@ Magnus.RPitems = Menu.AddOptionMultiSelect({"Hero Specific", "Magnus", "Blink + 
     {"item_crimson_guard", "panorama/images/items/crimson_guard_png.vtex_c", true},
     {"item_hood_of_defiance", "panorama/images/items/hood_of_defiance_png.vtex_c", true},
 }, false)
+Magnus.optionSkewerAfterRP = Menu.AddOptionBool({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "Use Skewer after RP", true)
+Magnus.optionToggleSkewerAfterRP= Menu.AddKeyOption({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "On/Off Skewer after RP", Enum.ButtonCode.BUTTON_CODE_NONE)
+Magnus.optionHornTossMode = Menu.AddOptionBool({"Hero Specific", "Magnus", "Horn Toss"}, "Use Horn Toss", true)
+Magnus.optionFallenSkyAsBlink = Menu.AddOptionBool({"Hero Specific", "Magnus", "Settings"}, "Use Fallen Sky as blink", false)
+Magnus.optionPositionX = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Settings"}, "info position X", 0, ScreenWidth, 1680)
+Magnus.optionPositionY = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Settings"}, "info position Y", 0, ScreenHeight, 50)
+Magnus.optionOpacity = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Settings"}, "info opacity", 0, 255, 175)
+Menu.AddMenuIcon({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "panorama/images/spellicons/magnataur_reverse_polarity_png.vtex_c")
+Menu.AddOptionIcon(Magnus.optionFallenSkyAsBlink, "panorama/images/items/fallen_sky_png.vtex_c")
+Menu.AddOptionIcon(Magnus.optionSkewerAfterRP, "panorama/images/spellicons/magnataur_skewer_png.vtex_c")
+Menu.AddOptionIcon(Magnus.optionToggleSkewerAfterRP, "panorama/images/spellicons/magnataur_skewer_png.vtex_c")
+Menu.AddOptionIcon(Magnus.optionBlinkSkewerShockwave, 'panorama/images/spellicons/magnataur_shockwave_png.vtex_c')
+Menu.AddOptionIcon(Magnus.optionDrawPosRP, '~/MenuIcons/map_points.png')
+Menu.AddMenuIcon({"Hero Specific", "Magnus"}, 'panorama/images/heroes/icons/npc_dota_hero_magnataur_png.vtex_c')
+Menu.AddMenuIcon({"Hero Specific", "Magnus", "Blink + Skewer"}, "panorama/images/spellicons/magnataur_skewer_png.vtex_c")
+Menu.AddMenuIcon({"Hero Specific", "Magnus", "Horn Toss"}, 'panorama/images/spellicons/magnataur_horn_toss_png.vtex_c')
+Menu.AddMenuIcon({"Hero Specific", "Magnus", "Settings"}, "~/MenuIcons/ellipsis.png")
 
-Magnus.font = Renderer.LoadFont("Tahoma", 30, Enum.FontWeight.EXTRABOLD)
+
+local magnusFont = Renderer.LoadFont("Tahoma", 30, Enum.FontWeight.EXTRABOLD)
 local blink = nil
 local shockwave = nil
 local skewer = nil
@@ -215,20 +220,31 @@ end;
 function Magnus.OnDraw()
     if not Menu.IsEnabled(Magnus.optionEnabled) then return end
     if not myHero then return end
+    local opacity = Menu.GetValue(Magnus.optionOpacity)
+    local posX = Menu.GetValue(Magnus.optionPositionX)
+    local posY = Menu.GetValue(Magnus.optionPositionY)
     if BlinkSkewerToggle then
-        Renderer.SetDrawColor(0, 255, 0, 175)   
+        Renderer.SetDrawColor(0, 255, 0, opacity)   
         if Menu.GetValue(Magnus.optionBlinkSkewerMode) == 0 then
-            Renderer.DrawText(Magnus.font, Menu.GetValue(Magnus.optionPositionX), Menu.GetValue(Magnus.optionPositionY), "BlinkSkewer (table)", 1)
+            Renderer.DrawText(magnusFont, posX, posY, "BlinkSkewer (table)", 1)
         end
         if Menu.GetValue(Magnus.optionBlinkSkewerMode) == 1 then
-            Renderer.DrawText(Magnus.font, Menu.GetValue(Magnus.optionPositionX), Menu.GetValue(Magnus.optionPositionY), "BlinkSkewer (mouse)", 1)
+            Renderer.DrawText(magnusFont, posX, posY, "BlinkSkewer (mouse)", 1)
         end
         if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 0 then
-            Renderer.DrawText(Magnus.font, Menu.GetValue(Magnus.optionPositionX), Menu.GetValue(Magnus.optionPositionY) + 25, "On hero", 1)
+            Renderer.DrawText(magnusFont, posX, posY + 25, "On hero", 1)
         end
         if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 1 then
-            Renderer.DrawText(Magnus.font, Menu.GetValue(Magnus.optionPositionX), Menu.GetValue(Magnus.optionPositionY) + 25, "On mouse", 1)
+            Renderer.DrawText(magnusFont, posX, posY + 25, "On mouse", 1)
         end
+        posY = Menu.GetValue(Magnus.optionPositionY) + 50
+    end
+    if Menu.IsEnabled(Magnus.optionSkewerAfterRP) then
+        Renderer.SetDrawColor(0, 255, 0, opacity)   
+        Renderer.DrawText(magnusFont, posX, posY, "Use skewer after RP", 1)
+    else
+        Renderer.SetDrawColor(255, 0, 0, opacity)
+        Renderer.DrawText(magnusFont, posX, posY, "Use skewer after RP", 1)
     end
 end
 
@@ -236,11 +252,17 @@ function Magnus.OnUpdate()
     if not Menu.IsEnabled(Magnus.optionEnabled) then return end
     if not myHero then return end
     local GameTime = GameRules.GetGameTime();
+    if Menu.IsKeyDownOnce(Magnus.optionToggleSkewerAfterRP) then
+        if Menu.IsEnabled(Magnus.optionSkewerAfterRP) then
+            Menu.SetEnabled(Magnus.optionSkewerAfterRP, false)
+        else
+            Menu.SetEnabled(Magnus.optionSkewerAfterRP, true)
+        end
+    end
     if TimerUpdate <= GameTime then
         TimerUpdate = GameTime + 0.4;
         MagnusUpdateInfo()
     end
-    local Mana = NPC.GetMana(myHero)
     if Menu.IsEnabled(Magnus.optionDrawPosRP) then
         if countDraw >= 1 then
             if Ability.IsReady(RP) and Ability.GetLevel(RP) > 0 then
@@ -253,10 +275,11 @@ function Magnus.OnUpdate()
             end
         end
     end
+    local Mana = NPC.GetMana(myHero)
     if Menu.IsEnabled(Magnus.optionDrawPosRP) then
         if Ability.IsReady(RP) and Ability.GetLevel(RP) > 0 then
             if Ability.IsReady(blink) then
-                local blink_radius = 1200 + Ability.GetCastRange(blink)
+                local blink_radius = 1150 + Ability.GetCastRange(blink)
                 if Ability.GetName(blink) == "item_fallen_sky" then
                     blink_radius = Ability.GetCastRange(blink)
                 end
@@ -274,7 +297,7 @@ function Magnus.OnUpdate()
                         end
                     end
                     Renderer.SetDrawColor(255, 255, 255, 225)
-                    Renderer.DrawText(Magnus.font, xDrawPos - 10, yDrawPos - 10, countDraw)
+                    Renderer.DrawText(magnusFont, xDrawPos - 10, yDrawPos - 10, countDraw)
                 else
                     if drawParticleCreateFlag then
                         Particle.Destroy(drawParticle)
@@ -543,7 +566,7 @@ function Magnus.OnUpdate()
     if CastingRP == true then
         local mousePos = Input.GetWorldCursorPos()
         local RP_radius = 380
-        local blink_radius = 1200 + Ability.GetCastRange(blink)
+        local blink_radius = 1150 + Ability.GetCastRange(blink)
         if Ability.GetName(blink) == "item_fallen_sky" then
             blink_radius = Ability.GetCastRange(blink)
         end
@@ -650,9 +673,14 @@ function Magnus.OnUpdate()
                         end
                         if Ability.IsReady(skewer) then
                             if RPstep == 5 then
-                                if TimerRP <= GameTime then
-                                    TimerRP = GameTime + 0.2;
-                                    Ability.CastPosition(skewer, mousePos)
+                                if Menu.IsEnabled(Magnus.optionSkewerAfterRP) then
+                                    if TimerRP <= GameTime then
+                                        TimerRP = GameTime + 0.2;
+                                        Ability.CastPosition(skewer, mousePos)
+                                        CastingRP = false
+                                        RPstep = 0
+                                    end
+                                else
                                     CastingRP = false
                                     RPstep = 0
                                 end
