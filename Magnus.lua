@@ -543,7 +543,7 @@ function Magnus.OnUpdate()
     if CastingRP == true then
         local mousePos = Input.GetWorldCursorPos()
         local RP_radius = 380
-        local blink_radius = 1150 + Ability.GetCastRange(blink)
+        local blink_radius = 1200 + Ability.GetCastRange(blink)
         if Ability.GetName(blink) == "item_fallen_sky" then
             blink_radius = Ability.GetCastRange(blink)
         end
