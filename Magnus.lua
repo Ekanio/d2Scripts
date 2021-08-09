@@ -141,20 +141,6 @@ local function MagnusBlink(myHero)
     return blink
 end
 
-local function MagnusUpdateInfo()
-    blink = MagnusBlink(myHero)
-    shockwave = NPC.GetAbility(myHero, "magnataur_shockwave")
-    skewer = NPC.GetAbility(myHero, "magnataur_skewer")
-    RP = NPC.GetAbility(myHero, "magnataur_reverse_polarity")
-    HornToss = NPC.GetAbility(myHero, "magnataur_horn_toss")
-    talent425 = NPC.GetAbility(myHero, "special_bonus_unique_magnus_3")
-    skewer_castrange = Ability.GetLevelSpecialValueFor(skewer, "range") + Ability.GetCastRange(skewer)
-    skewerManaCost = Ability.GetManaCost(skewer)
-    shockwaveManaCost = Ability.GetManaCost(shockwave)
-    RPManaCost = Ability.GetManaCost(RP)
-    HornTossManaCost = Ability.GetManaCost(HornToss)
-end
-
 local function MagnusBestBlinkPosition(unitsAround, radius)
     if not unitsAround or #unitsAround <= 0 then return nil end
     local enemyNum = #unitsAround
@@ -201,6 +187,20 @@ local function MagnusPredictedPosition(npc, delay)
 end
 
 --LIBS END
+
+local function MagnusUpdateInfo()
+    blink = MagnusBlink(myHero)
+    shockwave = NPC.GetAbility(myHero, "magnataur_shockwave")
+    skewer = NPC.GetAbility(myHero, "magnataur_skewer")
+    RP = NPC.GetAbility(myHero, "magnataur_reverse_polarity")
+    HornToss = NPC.GetAbility(myHero, "magnataur_horn_toss")
+    talent425 = NPC.GetAbility(myHero, "special_bonus_unique_magnus_3")
+    skewer_castrange = Ability.GetLevelSpecialValueFor(skewer, "range") + Ability.GetCastRange(skewer)
+    skewerManaCost = Ability.GetManaCost(skewer)
+    shockwaveManaCost = Ability.GetManaCost(shockwave)
+    RPManaCost = Ability.GetManaCost(RP)
+    HornTossManaCost = Ability.GetManaCost(HornToss)
+end
 
 local function MagnusInit()
     if Engine.IsInGame() then
@@ -249,7 +249,18 @@ function Magnus.OnDraw()
 end
 
 function Magnus.OnUpdate()
-    if not Menu.IsEnabled(Magnus.optionEnabled) then return end
+    if not Menu.IsEnabled(Magnus.optionEnabled) then 
+        if BlinkSkewerToggle then
+            BlinkSkewerToggle = false
+            Particle.Destroy(circle1)
+            Particle.Destroy(skewerParticle)
+        end
+        if drawParticleCreateFlag then
+            drawParticleCreateFlag = false
+            Particle.Destroy(drawParticle)
+        end
+        return 
+    end
     if not myHero then return end
     local GameTime = GameRules.GetGameTime();
     if Menu.IsKeyDownOnce(Magnus.optionToggleSkewerAfterRP) then
@@ -476,7 +487,11 @@ function Magnus.OnUpdate()
                                 if Skewerstep == 0 then
                                     if NPC.IsPositionInRange(enemy, Input.GetWorldCursorPos(), 250, 0) then
                                         updateHeroPos = false
-                                        Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 55))
+                                        if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) and Ability.IsReady(shockwave) then
+                                            Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 110))
+                                        else
+                                            Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 55))
+                                        end
                                         if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
                                             Skewerstep = 1
                                         else
