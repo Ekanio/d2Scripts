@@ -405,7 +405,7 @@ function Magnus.OnUpdate()
                                     if Skewerstep == 1 then
                                         if Ability.IsReady(shockwave) then
                                             if TimerSkewer <= GameTime then
-                                                TimerSkewer = GameTime + 0.4;
+                                                TimerSkewer = GameTime + 0.1;
                                                 Ability.CastTarget(shockwave, enemy)
                                             end
                                         else
@@ -506,7 +506,7 @@ function Magnus.OnUpdate()
                                     if Skewerstep == 1 then
                                         if Ability.IsReady(shockwave) then
                                             if TimerSkewer <= GameTime then
-                                                TimerSkewer = GameTime + 0.4;
+                                                TimerSkewer = GameTime + 0.1;
                                                 Ability.CastTarget(shockwave, enemy)
                                             end
                                         else
@@ -651,7 +651,7 @@ function Magnus.OnUpdate()
                         if RPstep == 2 then
                             if Ability.IsReady(RP) then
                                 if TimerRP <= GameTime then
-                                    TimerRP = GameTime + 0.5;
+                                    TimerRP = GameTime + 0.2;
                                     Ability.CastNoTarget(RP)
                                 end
                             else
@@ -679,7 +679,7 @@ function Magnus.OnUpdate()
                         if Ability.IsReady(shockwave) then
                             if RPstep == 4 then
                                 if TimerRP <= GameTime then
-                                    TimerRP = GameTime + 0.5;
+                                    TimerRP = GameTime + 0.1;
                                     Ability.CastTarget(shockwave, enemiesUnderRP[1])
                                 end
                             end
