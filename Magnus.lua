@@ -55,6 +55,7 @@ local skewerManaCost = nil
 local shockwaveManaCost = nil
 local RPManaCost = nil
 local HornTossManaCost = nil
+local wispHasShard = false
 
 local countDraw = 0
 local drawParticleCreateFlag = false
@@ -200,6 +201,16 @@ local function MagnusUpdateInfo()
     shockwaveManaCost = Ability.GetManaCost(shockwave)
     RPManaCost = Ability.GetManaCost(RP)
     HornTossManaCost = Ability.GetManaCost(HornToss)
+    if wispHasShard == false then
+        for i, enemy in pairs(Heroes.GetAll()) do
+            if NPC.GetUnitName(enemy) == "npc_dota_hero_wisp" then
+                local wisp = enemy
+                if NPC.HasModifier(enemy, "modifier_item_aghanims_shard") then
+                    wispHasShard = true
+                end
+            end
+        end
+    end
 end
 
 local function MagnusInit()
@@ -387,11 +398,20 @@ function Magnus.OnUpdate()
                             end
                         end
                         if continueCasting then
+                            if wispHasShard and (NPC.HasModifier(enemy, "modifier_wisp_tether_haste") or NPC.HasModifier(enemy, "modifier_wisp_tether")) and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+                                continueCasting = false
+                            end
+                        end
+                        if continueCasting then
                             local distance = (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Length2D()
                             if Ability.IsReady(blink) and Ability.IsReady(skewer) then
                                 if Skewerstep == 0 then
                                     updateHeroPos = false
-                                    Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 55))
+                                    if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) and Ability.IsReady(shockwave) then
+                                        Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 110))
+                                    else
+                                        Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 55))
+                                    end
                                     if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
                                         Skewerstep = 1
                                     else
@@ -480,6 +500,11 @@ function Magnus.OnUpdate()
                         else
                             if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange + 50, 0) then
                                 continueCasting = true
+                            end
+                        end
+                        if continueCasting then
+                            if wispHasShard and (NPC.HasModifier(enemy, "modifier_wisp_tether_haste") or NPC.HasModifier(enemy, "modifier_wisp_tether")) and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+                                continueCasting = false
                             end
                         end
                         if continueCasting then
