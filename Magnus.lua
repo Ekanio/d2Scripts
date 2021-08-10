@@ -398,8 +398,8 @@ function Magnus.OnUpdate()
                             end
                         end
                         if continueCasting then
-                            if wispHasShard and (NPC.HasModifier(enemy, "modifier_wisp_tether_haste") or NPC.HasModifier(enemy, "modifier_wisp_tether")) and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
-                                continueCasting = false
+                            if wispHasShard then
+                                Log.Write("))")
                             end
                         end
                         if continueCasting then
@@ -451,7 +451,8 @@ function Magnus.OnUpdate()
                                         if Ability.IsReady(skewer) then
                                             if TimerSkewer <= GameTime then
                                                 TimerSkewer = GameTime + 0.25;
-                                                Ability.CastPosition(skewer, prevPos)
+                                                local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
+                                                Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                             end
                                         else
                                             Skewerstep = 0
@@ -466,7 +467,8 @@ function Magnus.OnUpdate()
                                     if Ability.IsReady(skewer) then
                                         if TimerSkewer <= GameTime then
                                             TimerSkewer = GameTime + 0.25;
-                                            Ability.CastPosition(skewer, prevPos)
+                                            local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
+                                            Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                         end
                                     else
                                         Skewerstep = 0
@@ -558,7 +560,8 @@ function Magnus.OnUpdate()
                                         if Ability.IsReady(skewer) then
                                             if TimerSkewer <= GameTime then
                                                 TimerSkewer = GameTime + 0.25;
-                                                Ability.CastPosition(skewer, prevPos)
+                                                local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
+                                                Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                             end
                                         else
                                             Skewerstep = 0
@@ -573,7 +576,8 @@ function Magnus.OnUpdate()
                                     if Ability.IsReady(skewer) then
                                         if TimerSkewer <= GameTime then
                                             TimerSkewer = GameTime + 0.25;
-                                            Ability.CastPosition(skewer, prevPos)
+                                            local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
+                                            Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                         end
                                     else
                                         Skewerstep = 0
