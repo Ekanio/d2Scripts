@@ -195,7 +195,7 @@ local function MagnusUpdateInfo()
     RP = NPC.GetAbility(myHero, "magnataur_reverse_polarity")
     HornToss = NPC.GetAbility(myHero, "magnataur_horn_toss")
     talent425 = NPC.GetAbility(myHero, "special_bonus_unique_magnus_3")
-    skewer_castrange = Ability.GetLevelSpecialValueFor(skewer, "range") + Ability.GetCastRange(skewer)
+    skewer_castrange = Ability.GetLevelSpecialValueFor(skewer, "range") + Ability.GetCastRange(skewer) + 200
     skewerManaCost = Ability.GetManaCost(skewer)
     shockwaveManaCost = Ability.GetManaCost(shockwave)
     RPManaCost = Ability.GetManaCost(RP)
@@ -334,7 +334,7 @@ function Magnus.OnUpdate()
         end
     end
     if talent425 and Ability.GetLevel(talent425) > 0 then
-        skewer_castrange = Ability.GetLevelSpecialValueFor(skewer, "range") + Ability.GetCastRange(skewer) + 425
+        skewer_castrange = Ability.GetLevelSpecialValueFor(skewer, "range") + Ability.GetCastRange(skewer) + 425 + 200
     end
     if Menu.IsKeyDownOnce(Magnus.optionBlinkSkewerToggle) then
         BlinkSkewerToggle = not BlinkSkewerToggle
@@ -416,7 +416,8 @@ function Magnus.OnUpdate()
                                         if Ability.IsReady(skewer) then
                                             if TimerSkewer <= GameTime then
                                                 TimerSkewer = GameTime + 0.25;
-                                                Ability.CastPosition(skewer, prevPos)
+                                                local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
+                                                Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                             end
                                         else
                                             Skewerstep = 0
@@ -517,7 +518,8 @@ function Magnus.OnUpdate()
                                         if Ability.IsReady(skewer) then
                                             if TimerSkewer <= GameTime then
                                                 TimerSkewer = GameTime + 0.25;
-                                                Ability.CastPosition(skewer, prevPos)
+                                                local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
+                                                Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                             end
                                         else
                                             Skewerstep = 0
@@ -691,7 +693,8 @@ function Magnus.OnUpdate()
                                 if Menu.IsEnabled(Magnus.optionSkewerAfterRP) then
                                     if TimerRP <= GameTime then
                                         TimerRP = GameTime + 0.2;
-                                        Ability.CastPosition(skewer, mousePos)
+                                        local distance = (mousePos - Entity.GetAbsOrigin(myHero)):Length2D()
+                                        Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (mousePos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                         CastingRP = false
                                         RPstep = 0
                                     end
