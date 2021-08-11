@@ -24,6 +24,7 @@ Magnus.RPitems = Menu.AddOptionMultiSelect({"Hero Specific", "Magnus", "Blink + 
     {"item_crimson_guard", "panorama/images/items/crimson_guard_png.vtex_c", true},
     {"item_hood_of_defiance", "panorama/images/items/hood_of_defiance_png.vtex_c", true},
 }, false)
+Magnus.optionTurnBeforeRP = Menu.AddOptionBool({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "Turn before RP", true)
 Magnus.optionSkewerAfterRP = Menu.AddOptionBool({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "Use Skewer after RP", true)
 Magnus.optionToggleSkewerAfterRP= Menu.AddKeyOption({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "On/Off Skewer after RP", Enum.ButtonCode.BUTTON_CODE_NONE)
 Magnus.optionHornTossMode = Menu.AddOptionBool({"Hero Specific", "Magnus", "Horn Toss"}, "Use Horn Toss", true)
@@ -37,6 +38,7 @@ Menu.AddOptionIcon(Magnus.optionSkewerAfterRP, "panorama/images/spellicons/magna
 Menu.AddOptionIcon(Magnus.optionToggleSkewerAfterRP, "panorama/images/spellicons/magnataur_skewer_png.vtex_c")
 Menu.AddOptionIcon(Magnus.optionBlinkSkewerShockwave, 'panorama/images/spellicons/magnataur_shockwave_png.vtex_c')
 Menu.AddOptionIcon(Magnus.optionDrawPosRP, '~/MenuIcons/map_points.png')
+Menu.AddOptionIcon(Magnus.optionTurnBeforeRP, '~/MenuIcons/return.png')
 Menu.AddMenuIcon({"Hero Specific", "Magnus"}, 'panorama/images/heroes/icons/npc_dota_hero_magnataur_png.vtex_c')
 Menu.AddMenuIcon({"Hero Specific", "Magnus", "Blink + Skewer"}, "panorama/images/spellicons/magnataur_skewer_png.vtex_c")
 Menu.AddMenuIcon({"Hero Specific", "Magnus", "Horn Toss"}, 'panorama/images/spellicons/magnataur_horn_toss_png.vtex_c')
@@ -594,7 +596,7 @@ function Magnus.OnUpdate()
     end
     if Menu.IsKeyDownOnce(Magnus.optionAutoRPToMouse) then
         if Ability.IsReady(blink) then
-            if Ability.IsReady(RP) then
+            if Ability.IsReady(RP) and Ability.GetLevel(RP) > 0 then
                 CastingRP = true
                 RPstep = 0
                 TimerRP2 = GameTime + 0.1;
@@ -678,45 +680,56 @@ function Magnus.OnUpdate()
                             RPstep = 2
                         end
                         if RPstep == 2 then
+                            if Menu.IsEnabled(Magnus.optionTurnBeforeRP) then
+                                if TimerRP <= GameTime then
+                                    TimerRP = GameTime + 0.2;
+                                    Player.PrepareUnitOrders(Players.GetLocal(), Enum.UnitOrder.DOTA_UNIT_ORDER_MOVE_TO_DIRECTION, nil, mousePos, nil, Enum.PlayerOrderIssuer.DOTA_ORDER_ISSUER_PASSED_UNIT_ONLY , myHero)
+                                    RPstep = 3
+                                end
+                            else
+                                RPstep = 3
+                            end
+                        end
+                        if RPstep == 3 then
                             if Ability.IsReady(RP) then
                                 if TimerRP <= GameTime then
                                     TimerRP = GameTime + 0.2;
                                     Ability.CastNoTarget(RP)
                                 end
                             else
-                                RPstep = 3
+                                RPstep = 4
                             end
                         end
-                        if Menu.IsEnabled(Magnus.optionHornTossMode) then
-                            if Ability.IsReady(HornToss) and Ability.GetLevel(HornToss) > 0 then
-                                if RPstep == 3 then
+                        if RPstep == 4 then
+                            if Menu.IsEnabled(Magnus.optionHornTossMode) then
+                                if Ability.IsReady(HornToss) and Ability.GetLevel(HornToss) > 0 then
                                     if Mana > minMana + HornTossManaCost then
                                         if TimerRP <= GameTime then
                                             TimerRP = GameTime + 0.2;
                                             Ability.CastNoTarget(HornToss)
                                         end
                                     else
-                                        RPstep = 4
+                                        RPstep = 5
                                     end
+                                else
+                                    RPstep = 5
                                 end
                             else
-                                RPstep = 4
+                                RPstep = 5
                             end
-                        else
-                            RPstep = 4
                         end
-                        if Ability.IsReady(shockwave) then
-                            if RPstep == 4 then
+                        if Ability.IsReady(shockwave) and Ability.GetLevel(shockwave) > 0 then
+                            if RPstep == 5 then
                                 if TimerRP <= GameTime then
                                     TimerRP = GameTime + 0.1;
                                     Ability.CastTarget(shockwave, enemiesUnderRP[1])
                                 end
                             end
                         else
-                            RPstep = 5
+                            RPstep = 6
                         end
-                        if Ability.IsReady(skewer) then
-                            if RPstep == 5 then
+                        if RPstep == 6 then
+                            if Ability.IsReady(skewer) and Ability.GetLevel(skewer) > 0 then
                                 if Menu.IsEnabled(Magnus.optionSkewerAfterRP) then
                                     if TimerRP <= GameTime then
                                         TimerRP = GameTime + 0.2;
