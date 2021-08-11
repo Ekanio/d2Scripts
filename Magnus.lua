@@ -400,8 +400,8 @@ function Magnus.OnUpdate()
                             end
                         end
                         if continueCasting then
-                            if wispHasShard then
-                                Log.Write("))")
+                            if wispHasShard and (NPC.HasModifier(enemy, "modifier_wisp_tether_haste") or NPC.HasModifier(enemy, "modifier_wisp_tether")) and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+                                continueCasting = false
                             end
                         end
                         if continueCasting then
@@ -718,15 +718,15 @@ function Magnus.OnUpdate()
                                 RPstep = 5
                             end
                         end
-                        if Ability.IsReady(shockwave) and Ability.GetLevel(shockwave) > 0 then
-                            if RPstep == 5 then
+                        if RPstep == 5 then
+                            if Ability.IsReady(shockwave) and Ability.GetLevel(shockwave) > 0 then
                                 if TimerRP <= GameTime then
                                     TimerRP = GameTime + 0.1;
                                     Ability.CastTarget(shockwave, enemiesUnderRP[1])
                                 end
+                            else
+                                RPstep = 6
                             end
-                        else
-                            RPstep = 6
                         end
                         if RPstep == 6 then
                             if Ability.IsReady(skewer) and Ability.GetLevel(skewer) > 0 then
