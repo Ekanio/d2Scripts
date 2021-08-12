@@ -300,6 +300,14 @@ function Magnus.OnUpdate()
         end
     end
     local Mana = NPC.GetMana(myHero)
+    if Skewerstep > 0 or RPstep > 0 then
+        if not Entity.IsAlive(myHero) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_ROOTED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_SILENCED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_MUTED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_STUNNED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_HEXED) or NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_NIGHTMARED) or NPC.HasModifier(myHero, "modifier_teleporting") or NPC.HasModifier(myHero, "modifier_pudge_swallow_hide") or NPC.HasModifier(myHero, "modifier_axe_berserkers_call") then
+            Skewerstep = 0
+            RPstep = 0
+            continueCasting = false
+            CastingRP = false
+        end 
+    end
     if Menu.IsEnabled(Magnus.optionDrawPosRP) then
         if Ability.IsReady(RP) and Ability.GetLevel(RP) > 0 then
             if Ability.IsReady(blink) then
@@ -722,7 +730,7 @@ function Magnus.OnUpdate()
                             if Ability.IsReady(shockwave) and Ability.GetLevel(shockwave) > 0 then
                                 if TimerRP <= GameTime then
                                     TimerRP = GameTime + 0.1;
-                                    Ability.CastTarget(shockwave, enemiesUnderRP[1])
+                                    Ability.CastPosition(shockwave, Entity.GetAbsOrigin(enemiesUnderRP[1]))
                                 end
                             else
                                 RPstep = 6
