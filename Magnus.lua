@@ -16,7 +16,6 @@ Magnus.RPitems = Menu.AddOptionMultiSelect({"Hero Specific", "Magnus", "Blink + 
     {"item_seer_stone", "panorama/images/items/seer_stone_png.vtex_c", true},
     {"item_shivas_guard", "panorama/images/items/shivas_guard_png.vtex_c", true},
     {"item_black_king_bar", "panorama/images/items/black_king_bar_png.vtex_c", true},
-    {"item_minotaur_horn", "panorama/images/items/minotaur_horn_png.vtex_c", true},
     {"item_spider_legs", "panorama/images/items/spider_legs_png.vtex_c", true},
     {"item_pipe", "panorama/images/items/pipe_png.vtex_c", true},
     {"item_eternal_shroud", "panorama/images/items/eternal_shroud_png.vtex_c", true},
@@ -627,7 +626,6 @@ function Magnus.OnUpdate()
         end
         local enemyHeroes = Entity.GetHeroesInRadius(myHero, blink_radius + RP_radius, Enum.TeamType.TEAM_ENEMY)
         local pos = MagnusBestBlinkPosition(enemyHeroes, RP_radius)
-        local immune = false
         local minMana = 0
         if Ability.IsReady(RP) then
             minMana = minMana + RPManaCost
@@ -652,20 +650,9 @@ function Magnus.OnUpdate()
                         if RPstep == 0 then
                             for i, item in pairs(Menu.GetItems(Magnus.RPitems)) do
                                 if Ability.IsReady(NPC.GetItem(myHero, tostring(item))) then
-                                    if item == "item_minotaur_horn" then
-                                        if immune == false then
-                                            if not NPC.HasModifier(myHero, "modifier_black_king_bar_immune") then
-                                                Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
-                                                immune = true
-                                            end
-                                        end
-                                    end
                                     if item == "item_black_king_bar" then
-                                        if immune == false then
-                                            if not NPC.HasModifier(myHero, "modifier_minotaur_horn_immune") then
-                                                Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
-                                                immune = true
-                                            end
+                                        if not NPC.HasModifier(myHero, "modifier_black_king_bar_immune") then
+                                            Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
                                         end
                                     end
                                     if item == "item_spider_legs" then
@@ -675,7 +662,7 @@ function Magnus.OnUpdate()
                                         Ability.CastPosition(NPC.GetItem(myHero, tostring(item)), pos)
                                     end
                                     if Mana > minMana + HornTossManaCost + 250 then
-                                        if item ~= "item_minotaur_horn" and item ~= "item_black_king_bar" then
+                                        if item ~= "item_black_king_bar" then
                                             Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
                                         end
                                     end
