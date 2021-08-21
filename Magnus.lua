@@ -71,7 +71,7 @@ local myTeam = nil
 local drawParticle = nil
 local updateHeroPos = false
 local TimerRP = GameRules.GetGameTime();
-local TimerUpdate = GameRules.GetGameTime();
+local TimerUpdate = GameRules.GetGameTime() - 100;
 local TimerSkewer = GameRules.GetGameTime();
 
 --LIBS
@@ -749,6 +749,8 @@ function Magnus.OnUpdate()
 end
 
 function Magnus.OnPrepareUnitOrders(order)
+    if not Menu.IsEnabled(Magnus.optionEnabled) then return end
+    if not myHero then return end
     if order["order"] == Enum.UnitOrder.DOTA_UNIT_ORDER_HOLD_POSITION then
         RPstep = 0
         Skewerstep = 0
