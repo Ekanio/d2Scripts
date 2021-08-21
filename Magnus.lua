@@ -27,6 +27,7 @@ Magnus.optionTurnBeforeRP = Menu.AddOptionBool({"Hero Specific", "Magnus", "Blin
 Magnus.optionSkewerAfterRP = Menu.AddOptionBool({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "Use Skewer after RP", true)
 Magnus.optionToggleSkewerAfterRP= Menu.AddKeyOption({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "On/Off Skewer after RP", Enum.ButtonCode.BUTTON_CODE_NONE)
 Magnus.optionHornTossMode = Menu.AddOptionBool({"Hero Specific", "Magnus", "Horn Toss"}, "Use Horn Toss", true)
+Magnus.optionRPFailSwitch = Menu.AddOptionBool({"Hero Specific", "Magnus", "Settings"}, "RP failswitch", false)
 Magnus.optionFallenSkyAsBlink = Menu.AddOptionBool({"Hero Specific", "Magnus", "Settings"}, "Use Fallen Sky as blink", false)
 Magnus.optionPositionX = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Settings"}, "info position X", 0, ScreenWidth, 1680)
 Magnus.optionPositionY = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Settings"}, "info position Y", 0, ScreenHeight, 50)
@@ -35,6 +36,7 @@ Menu.AddMenuIcon({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "panorama/i
 Menu.AddOptionIcon(Magnus.optionFallenSkyAsBlink, "panorama/images/items/fallen_sky_png.vtex_c")
 Menu.AddOptionIcon(Magnus.optionSkewerAfterRP, "panorama/images/spellicons/magnataur_skewer_png.vtex_c")
 Menu.AddOptionIcon(Magnus.optionToggleSkewerAfterRP, "panorama/images/spellicons/magnataur_skewer_png.vtex_c")
+Menu.AddOptionIcon(Magnus.optionRPFailSwitch, 'panorama/images/spellicons/magnataur_reverse_polarity_png.vtex_c')
 Menu.AddOptionIcon(Magnus.optionBlinkSkewerShockwave, 'panorama/images/spellicons/magnataur_shockwave_png.vtex_c')
 Menu.AddOptionIcon(Magnus.optionDrawPosRP, '~/MenuIcons/map_points.png')
 Menu.AddOptionIcon(Magnus.optionTurnBeforeRP, '~/MenuIcons/return.png')
@@ -61,8 +63,8 @@ local wispHasShard = false
 local countDraw = 0
 local drawParticleCreateFlag = false
 local CastingRP = false
-local RPstep = nil
-local Skewerstep = nil
+local RPstep = 0
+local Skewerstep = 0
 local BlinkSkewerToggle = false
 local myHero = nil
 local myTeam = nil
@@ -750,6 +752,22 @@ function Magnus.OnPrepareUnitOrders(order)
     if order["order"] == Enum.UnitOrder.DOTA_UNIT_ORDER_HOLD_POSITION then
         RPstep = 0
         Skewerstep = 0
+    end
+    if Menu.IsEnabled(Magnus.optionRPFailSwitch) then
+        if Ability.GetName(order["ability"]) == "magnataur_reverse_polarity" then
+            if order["order"] == Enum.UnitOrder.DOTA_UNIT_ORDER_CAST_NO_TARGET then
+                local enemiesNear = Heroes.InRadius(Entity.GetAbsOrigin(myHero), 410, myTeam, Enum.TeamType.TEAM_ENEMY)
+                local count = 0
+                for i,enemy in pairs(enemiesNear) do
+                    if enemy ~= nil and Entity.IsHero(enemy) and not Entity.IsSameTeam(myHero, enemy) and Entity.IsAlive(enemy) and not Entity.IsDormant(enemy) and not NPC.IsIllusion(enemy) then
+                        count = count + 1
+                    end
+                end
+                if count <= 0 then
+                    return false
+                end
+            end
+        end
     end
 end
 
