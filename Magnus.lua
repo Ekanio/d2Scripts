@@ -394,7 +394,7 @@ function Magnus.OnUpdate()
                         if Entity.IsDormant(enemy) or not Entity.IsAlive(enemy) or NPC.IsStructure(enemy) or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) or NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then return end
                         continueCasting = false
                         if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
-                            if Ability.IsReady(shockwave) then
+                            if Ability.IsReady(shockwave) and Ability.GetLevel(shockwave) > 0 then
                                 if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange, 0) then
                                     continueCasting = true
                                 end
@@ -418,7 +418,7 @@ function Magnus.OnUpdate()
                             if Ability.IsReady(blink) and Ability.IsReady(skewer) then
                                 if Skewerstep == 0 then
                                     updateHeroPos = false
-                                    if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) and Ability.IsReady(shockwave) then
+                                    if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) and Ability.IsReady(shockwave) and Ability.GetLevel(shockwave) > 0 then
                                         Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 110))
                                     else
                                         Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 55))
@@ -434,7 +434,7 @@ function Magnus.OnUpdate()
                                 if not Ability.IsReady(shockwave) then Mana = Mana + shockwaveManaCost end
                                 if Mana > shockwaveManaCost + skewerManaCost then
                                     if Skewerstep == 1 then
-                                        if Ability.IsReady(shockwave) then
+                                        if Ability.IsReady(shockwave) and Ability.GetLevel(shockwave) > 0 then
                                             if TimerSkewer <= GameTime then
                                                 TimerSkewer = GameTime + 0.1;
                                                 Ability.CastTarget(shockwave, enemy)
@@ -525,7 +525,7 @@ function Magnus.OnUpdate()
                                 if Skewerstep == 0 then
                                     if NPC.IsPositionInRange(enemy, Input.GetWorldCursorPos(), 250, 0) then
                                         updateHeroPos = false
-                                        if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) and Ability.IsReady(shockwave) then
+                                        if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) and Ability.IsReady(shockwave) and Ability.GetLevel(shockwave) > 0 then
                                             Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 110))
                                         else
                                             Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 55))
@@ -542,7 +542,7 @@ function Magnus.OnUpdate()
                                 if not Ability.IsReady(shockwave) then Mana = Mana + shockwaveManaCost end
                                 if Mana > shockwaveManaCost + skewerManaCost then
                                     if Skewerstep == 1 then
-                                        if Ability.IsReady(shockwave) then
+                                        if Ability.IsReady(shockwave) and Ability.GetLevel(shockwave) > 0 then
                                             if TimerSkewer <= GameTime then
                                                 TimerSkewer = GameTime + 0.1;
                                                 Ability.CastTarget(shockwave, enemy)
@@ -635,7 +635,7 @@ function Magnus.OnUpdate()
         if Ability.IsReady(skewer) then
             minMana = minMana + skewerManaCost
         end
-        if Ability.IsReady(shockwave) then
+        if Ability.IsReady(shockwave) and Ability.GetLevel(shockwave) > 0 then
             minMana = minMana + shockwaveManaCost
         end
         if pos then 
