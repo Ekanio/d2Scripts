@@ -396,7 +396,9 @@ function Magnus.OnUpdate()
                         if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
                             if Ability.IsReady(shockwave) and Ability.GetLevel(shockwave) > 0 then
                                 if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange, 0) then
-                                    continueCasting = true
+                                    if Mana > shockwaveManaCost + skewerManaCost then
+                                        continueCasting = true
+                                    end
                                 end
                             else
                                 if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange + 200, 0) then
@@ -502,7 +504,9 @@ function Magnus.OnUpdate()
                         if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
                             if Ability.IsReady(shockwave) then
                                 if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange, 0) then
-                                    continueCasting = true
+                                    if Mana > shockwaveManaCost + skewerManaCost then
+                                        continueCasting = true
+                                    end
                                 end
                             else
                                 if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange + 200, 0) then
