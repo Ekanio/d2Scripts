@@ -198,8 +198,6 @@ local function SKBlink(myHero)
     return blink
 end
 
---LIBS END
-
 local function has_value (tab, val)
     for index, value in ipairs(tab) do
         if value == val then
@@ -209,6 +207,7 @@ local function has_value (tab, val)
 
     return false
 end
+--LIBS END
 
 local function SKUpdateInfo()
     blink = SKBlink(myHero)
