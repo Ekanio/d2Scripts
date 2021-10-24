@@ -183,7 +183,6 @@ local function SKBlink(myHero)
     overblink = NPC.GetItem(myHero, "item_overwhelming_blink")
     arcaneblink = NPC.GetItem(myHero, "item_arcane_blink")
     swiftblink = NPC.GetItem(myHero, "item_swift_blink")
-    fallensky = NPC.GetItem(myHero, "item_fallen_sky")
     if Ability.IsReady(defblink) then
         blink = defblink
     end
