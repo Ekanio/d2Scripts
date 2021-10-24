@@ -126,9 +126,6 @@ local heroes = {  -- huge thanks to Svotin
 	[135] = 'npc_dota_hero_dawnbreaker',
 }
 
-
-
-local SKFont = Renderer.LoadFont("Tahoma", 30, Enum.FontWeight.EXTRABOLD)
 local blink = nil
 local burrowstrike = nil
 local sandstorm = nil
@@ -273,7 +270,7 @@ function SK.OnUpdate()
                 local nearest = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
                 local Range = 0
                 if Ability.IsCastable(blink, 400) then
-                    Range = 600 + Ability.GetCastRange(blink)
+                    Range = 800 + Ability.GetCastRange(blink)
                 end
                 if Ability.IsReady(burrowstrike) then
                     Range = Range + burrowstrikecastrange
@@ -291,7 +288,7 @@ function SK.OnUpdate()
                             Timer = gameTime + 0.2;
                             local Range = 0
                             if Ability.IsCastable(blink, 400) then
-                                Range = 600 + Ability.GetCastRange(blink)
+                                Range = 800 + Ability.GetCastRange(blink)
                             end
                             if Ability.IsReady(burrowstrike) then
                                 Range = Range + burrowstrikecastrange
