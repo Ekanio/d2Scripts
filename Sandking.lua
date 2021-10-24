@@ -222,12 +222,14 @@ local function SKUpdateInfo()
     epicenterManaCost = Ability.GetManaCost(epicenter)
     if flagMenuUpdate == false then
         local teammates = {}
+        local teammates2 = {}
         for i, hero in pairs(Heroes.GetAll()) do
             if Entity.IsSameTeam(myHero, hero) and not has_value(teammates, Player.GetPlayerID(Entity.GetOwner(hero))) then
                 table.insert(teammates, Player.GetPlayerID(Entity.GetOwner(hero)))
+                table.insert(teammates2, NPC.GetUnitName(hero))
             end
         end
-        if(#teammates == 5) then
+        if(#teammates == #teammates2) then
             for i,enemy in pairs(Players.GetAll()) do
                 if not has_value(teammates, Player.GetPlayerID(enemy)) then
                     table.insert(tableTest, {heroes[Player.GetTeamData(enemy).selected_hero_id], "panorama/images/heroes/icons/" .. heroes[Player.GetTeamData(enemy).selected_hero_id] .. "_png.vtex_c", false})
