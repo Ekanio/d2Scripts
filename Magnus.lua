@@ -385,7 +385,7 @@ function Magnus.OnUpdate()
                 Particle.SetControlPoint(circle1, 0, prevPos)
             end
         end
-        if Mana > skewerManaCost then
+        --if Mana > skewerManaCost then
             if Menu.GetValue(Magnus.optionBlinkSkewerMode) == 0 then
                 local enemyTable = Entity.GetHeroesInRadius(myHero, 1100 + Ability.GetCastRange(blink), Enum.TeamType.TEAM_ENEMY)
                 for i, enemy in pairs(enemyTable) do
@@ -398,6 +398,12 @@ function Magnus.OnUpdate()
                                 if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange, 0) then
                                     if Mana > shockwaveManaCost + skewerManaCost then
                                         continueCasting = true
+                                    else
+                                        local soulring = NPC.GetItem(myHero, "item_soul_ring")
+                                        if Ability.IsCastable(soulring, Mana) and Mana + 150 > shockwaveManaCost + skewerManaCost then
+                                            Ability.CastNoTarget(soulring)
+                                            continueCasting = true
+                                        end
                                     end
                                 end
                             else
@@ -417,7 +423,7 @@ function Magnus.OnUpdate()
                         end
                         if continueCasting then
                             local distance = (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Length2D()
-                            if Ability.IsReady(blink) and Ability.IsReady(skewer) then
+                            if Ability.IsReady(blink) and Ability.IsCastable(skewer, Mana) then
                                 if Skewerstep == 0 then
                                     updateHeroPos = false
                                     if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) and Ability.IsReady(shockwave) and Ability.GetLevel(shockwave) > 0 then
@@ -432,6 +438,11 @@ function Magnus.OnUpdate()
                                     else
                                         Skewerstep = 2
                                     end
+                                end
+                            else
+                                local soulring = NPC.GetItem(myHero, "item_soul_ring")
+                                if (Ability.IsCastable(soulring, Mana)) and not (Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave)) and (Mana + 150 > skewerManaCost) and (Ability.IsReady(blink)) and (Skewerstep == 0) then
+                                    Ability.CastNoTarget(soulring)
                                 end
                             end
                             if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
@@ -452,9 +463,6 @@ function Magnus.OnUpdate()
                                             if TimerSkewer <= GameTime then
                                                 TimerSkewer = GameTime + 0.25;
                                                 local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
-                                                if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 0 then
-                                                    distance = distance + 350
-                                                end
                                                 Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                             end
                                         else
@@ -470,9 +478,6 @@ function Magnus.OnUpdate()
                                             if TimerSkewer <= GameTime then
                                                 TimerSkewer = GameTime + 0.25;
                                                 local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
-                                                if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 0 then
-                                                    distance = distance + 350
-                                                end
                                                 Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                             end
                                         else
@@ -489,9 +494,6 @@ function Magnus.OnUpdate()
                                         if TimerSkewer <= GameTime then
                                             TimerSkewer = GameTime + 0.25;
                                             local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
-                                            if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 0 then
-                                                distance = distance + 350
-                                            end
                                             Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                         end
                                     else
@@ -517,6 +519,12 @@ function Magnus.OnUpdate()
                                 if NPC.IsPositionInRange(enemy, prevPos, skewer_castrange, 0) then
                                     if Mana > shockwaveManaCost + skewerManaCost then
                                         continueCasting = true
+                                    else
+                                        local soulring = NPC.GetItem(myHero, "item_soul_ring")
+                                        if Ability.IsCastable(soulring, Mana) and Mana + 150 > shockwaveManaCost + skewerManaCost then
+                                            Ability.CastNoTarget(soulring)
+                                            continueCasting = true
+                                        end
                                     end
                                 end
                             else
@@ -536,7 +544,7 @@ function Magnus.OnUpdate()
                         end
                         if continueCasting then
                             local distance = (MagnusPredictedPosition(enemy, 0.4) - Entity.GetAbsOrigin(myHero)):Length2D()
-                            if Ability.IsReady(blink) and Ability.IsReady(skewer) then
+                            if Ability.IsReady(blink) and Ability.IsCastable(skewer, Mana) then
                                 if Skewerstep == 0 then
                                     if NPC.IsPositionInRange(enemy, Input.GetWorldCursorPos(), 250, 0) then
                                         updateHeroPos = false
@@ -553,6 +561,11 @@ function Magnus.OnUpdate()
                                             Skewerstep = 2
                                         end
                                     end
+                                end
+                            else
+                                local soulring = NPC.GetItem(myHero, "item_soul_ring")
+                                if (Ability.IsCastable(soulring, Mana)) and not (Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave)) and (Mana + 150 > skewerManaCost) and (Ability.IsReady(blink)) and (NPC.IsPositionInRange(enemy, Input.GetWorldCursorPos(), 250, 0)) and (Skewerstep == 0) then
+                                    Ability.CastNoTarget(soulring)
                                 end
                             end
                             if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
@@ -573,9 +586,6 @@ function Magnus.OnUpdate()
                                             if TimerSkewer <= GameTime then
                                                 TimerSkewer = GameTime + 0.25;
                                                 local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
-                                                if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 0 then
-                                                    distance = distance + 350
-                                                end
                                                 Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                             end
                                         else
@@ -591,9 +601,6 @@ function Magnus.OnUpdate()
                                             if TimerSkewer <= GameTime then
                                                 TimerSkewer = GameTime + 0.25;
                                                 local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
-                                                if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 0 then
-                                                    distance = distance + 350
-                                                end
                                                 Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                             end
                                         else
@@ -610,9 +617,6 @@ function Magnus.OnUpdate()
                                         if TimerSkewer <= GameTime then
                                             TimerSkewer = GameTime + 0.25;
                                             local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
-                                            if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 0 then
-                                                distance = distance + 350
-                                            end
                                             Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                         end
                                     else
@@ -627,7 +631,7 @@ function Magnus.OnUpdate()
                     end
                 end
             end
-        end
+        --end
     end
     if Menu.IsKeyDownOnce(Magnus.optionAutoRPToMouse) then
         if Ability.IsReady(blink) then
@@ -768,6 +772,11 @@ function Magnus.OnUpdate()
                             end
                         end
                     end
+                end
+            else
+                local soulring = NPC.GetItem(myHero, "item_soul_ring")
+                if Ability.IsCastable(soulring, Mana) and Mana + 150 > minMana then
+                    Ability.CastNoTarget(soulring)
                 end
             end
         end 
