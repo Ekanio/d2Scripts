@@ -422,8 +422,10 @@ function Magnus.OnUpdate()
                                     updateHeroPos = false
                                     if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) and Ability.IsReady(shockwave) and Ability.GetLevel(shockwave) > 0 then
                                         Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 110))
+                                        TimerSkewer = GameTime + 0.25;
                                     else
                                         Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 55))
+                                        TimerSkewer = GameTime + 0.25;
                                     end
                                     if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
                                         Skewerstep = 1
@@ -450,6 +452,9 @@ function Magnus.OnUpdate()
                                             if TimerSkewer <= GameTime then
                                                 TimerSkewer = GameTime + 0.25;
                                                 local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
+                                                if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 0 then
+                                                    distance = distance + 350
+                                                end
                                                 Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                             end
                                         else
@@ -465,6 +470,9 @@ function Magnus.OnUpdate()
                                             if TimerSkewer <= GameTime then
                                                 TimerSkewer = GameTime + 0.25;
                                                 local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
+                                                if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 0 then
+                                                    distance = distance + 350
+                                                end
                                                 Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                             end
                                         else
@@ -481,6 +489,9 @@ function Magnus.OnUpdate()
                                         if TimerSkewer <= GameTime then
                                             TimerSkewer = GameTime + 0.25;
                                             local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
+                                            if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 0 then
+                                                distance = distance + 350
+                                            end
                                             Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                         end
                                     else
@@ -531,8 +542,10 @@ function Magnus.OnUpdate()
                                         updateHeroPos = false
                                         if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) and Ability.IsReady(shockwave) and Ability.GetLevel(shockwave) > 0 then
                                             Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 110))
+                                            TimerSkewer = GameTime + 0.25;
                                         else
                                             Ability.CastPosition(blink, Entity.GetAbsOrigin(myHero) + (MagnusPredictedPosition(enemy, 0.35) - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance + 55))
+                                            TimerSkewer = GameTime + 0.25;
                                         end
                                         if Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave) then
                                             Skewerstep = 1
@@ -560,6 +573,9 @@ function Magnus.OnUpdate()
                                             if TimerSkewer <= GameTime then
                                                 TimerSkewer = GameTime + 0.25;
                                                 local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
+                                                if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 0 then
+                                                    distance = distance + 350
+                                                end
                                                 Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                             end
                                         else
@@ -575,6 +591,9 @@ function Magnus.OnUpdate()
                                             if TimerSkewer <= GameTime then
                                                 TimerSkewer = GameTime + 0.25;
                                                 local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
+                                                if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 0 then
+                                                    distance = distance + 350
+                                                end
                                                 Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                             end
                                         else
@@ -591,6 +610,9 @@ function Magnus.OnUpdate()
                                         if TimerSkewer <= GameTime then
                                             TimerSkewer = GameTime + 0.25;
                                             local distance = (prevPos - Entity.GetAbsOrigin(myHero)):Length2D()
+                                            if Menu.GetValue(Magnus.optionBlinkSkewerPointMode) == 0 then
+                                                distance = distance + 350
+                                            end
                                             Ability.CastPosition(skewer, Entity.GetAbsOrigin(myHero) + (prevPos - Entity.GetAbsOrigin(myHero)):Normalized():Scaled(distance - 200))
                                         end
                                     else
