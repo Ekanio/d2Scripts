@@ -13,6 +13,7 @@ local timer = GameRules.GetGameTime();
 
 function ManageCourier.OnUpdate()
 	if not Menu.IsEnabled(ManageCourier.optionEnable) then return end
+	if not (GameRules.GetGameMode() <= 5 and not GameRules.GetGameMode() == 0) or not GameRules.GetGameMode() == 22 or not GameRules.GetGameMode() == 11 or not GameRules.GetGameMode() == 16 or not GameRules.GetGameMode() == 17 or not GameRules.GetGameMode() == 18 or not GameRules.GetGameMode() == 21 then return end
 	local myHero = Heroes.GetLocal()
 	if not myHero then return end 
 	if GameRules.GetGameTime() > timer then
