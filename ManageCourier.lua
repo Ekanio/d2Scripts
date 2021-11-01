@@ -16,7 +16,7 @@ function ManageCourier.OnUpdate()
 	local myHero = Heroes.GetLocal()
 	if not myHero then return end 
 	if GameRules.GetGameTime() > timer then
-		if not GameRules.GetGameMode() == 1 or not GameRules.GetGameMode() == 2 or not GameRules.GetGameMode() == 3 or not GameRules.GetGameMode() == 4 or not GameRules.GetGameMode() == 5 or not GameRules.GetGameMode() == 22 or not GameRules.GetGameMode() == 11 or not GameRules.GetGameMode() == 16 or not GameRules.GetGameMode() == 17 or not GameRules.GetGameMode() == 18 or not GameRules.GetGameMode() == 21 then return end
+		if GameRules.GetGameMode() == 15 or GameRules.GetGameMode() == 0 or GameRules.GetGameMode() == 23 or GameRules.GetGameMode() == 20 or GameRules.GetGameMode() == 19 or GameRules.GetGameMode() == 10 or GameRules.GetGameMode() == 9 or GameRules.GetGameMode() == 7 or GameRules.GetGameMode() == 6 then return end
 		for i, courier in pairs(Couriers.GetAll()) do
 			if Entity.GetOwner(courier) == Players.GetLocal() then
 				if Entity.GetTeamNum(myHero) == 3 then
