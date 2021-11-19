@@ -124,6 +124,7 @@ local heroes = {  -- huge thanks to Svotin
 	[128] = 'npc_dota_hero_snapfire',
 	[123] = 'npc_dota_hero_hoodwink',
 	[135] = 'npc_dota_hero_dawnbreaker',
+    [136] = 'npc_dota_hero_marci',
 }
 
 local blink = nil
@@ -140,13 +141,11 @@ local comboing = false
 local flagMenuUpdate = false
 local countDraw = 0
 local combostep = 0
-local Skewerstep = 0
-local BlinkSkewerToggle = false
 local myHero = nil
 local myTeam = nil
 local Timer = GameRules.GetGameTime();
 local TimerUpdate = GameRules.GetGameTime() - 100;
-local tableTest = {}
+local menuSelectionTable = {}
 
 SK.optionEnabled = Menu.AddOptionBool({"Hero Specific", "Sand King"}, "Enable", false)
 SK.optionBind = Menu.AddKeyOption({"Hero Specific", "Sand King"}, "Combo key", Enum.ButtonCode.BUTTON_CODE_NONE)
@@ -213,7 +212,7 @@ local function SKUpdateInfo()
     epicenter = NPC.GetAbility(myHero, "sandking_epicenter")
     burrowstrikecastrange = Ability.GetCastRange(burrowstrike)
     burrowstrikeManaCost = Ability.GetManaCost(burrowstrike)
-    sandstormManaCost = Ability.GetManaCost(skewer)
+    sandstormManaCost = Ability.GetManaCost(sandstorm)
     epicenterManaCost = Ability.GetManaCost(epicenter)
     if flagMenuUpdate == false then
         local teammates = {}
@@ -227,10 +226,10 @@ local function SKUpdateInfo()
         if(#teammates == #teammates2) then
             for i,enemy in pairs(Players.GetAll()) do
                 if not has_value(teammates, Player.GetPlayerID(enemy)) then
-                    table.insert(tableTest, {heroes[Player.GetTeamData(enemy).selected_hero_id], "panorama/images/heroes/icons/" .. heroes[Player.GetTeamData(enemy).selected_hero_id] .. "_png.vtex_c", false})
+                    table.insert(menuSelectionTable, {heroes[Player.GetTeamData(enemy).selected_hero_id], "panorama/images/heroes/icons/" .. heroes[Player.GetTeamData(enemy).selected_hero_id] .. "_png.vtex_c", false})
                 end
             end
-            SK.epicenterPriority = Menu.AddOptionMultiSelect({"Hero Specific", "Sand King", "Epicenter"}, "Cast epicenter anyway:", tableTest, false)
+            SK.epicenterPriority = Menu.AddOptionMultiSelect({"Hero Specific", "Sand King", "Epicenter"}, "Cast epicenter anyway:", menuSelectionTable, false)
             flagMenuUpdate = true
         end
     end
