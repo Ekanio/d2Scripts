@@ -29,11 +29,13 @@ Magnus.optionToggleSkewerAfterRP= Menu.AddKeyOption({"Hero Specific", "Magnus", 
 Magnus.optionHornTossMode = Menu.AddOptionBool({"Hero Specific", "Magnus", "Horn Toss"}, "Use Horn Toss", true)
 Magnus.optionRPFailSwitch = Menu.AddOptionBool({"Hero Specific", "Magnus", "Settings"}, "RP failswitch", false)
 Magnus.optionFallenSkyAsBlink = Menu.AddOptionBool({"Hero Specific", "Magnus", "Settings"}, "Use Fallen Sky as blink", false)
+Magnus.optionSoulringAutouse = Menu.AddOptionBool({"Hero Specific", "Magnus", "Settings"}, "Use soulring if needed", false)
 Magnus.optionPositionX = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Settings"}, "info position X", 0, ScreenWidth, 1680)
 Magnus.optionPositionY = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Settings"}, "info position Y", 0, ScreenHeight, 50)
 Magnus.optionOpacity = Menu.AddOptionSlider({"Hero Specific", "Magnus", "Settings"}, "info opacity", 0, 255, 175)
 Menu.AddMenuIcon({"Hero Specific", "Magnus", "Blink + RP + Skewer"}, "panorama/images/spellicons/magnataur_reverse_polarity_png.vtex_c")
 Menu.AddOptionIcon(Magnus.optionFallenSkyAsBlink, "panorama/images/items/fallen_sky_png.vtex_c")
+Menu.AddOptionIcon(Magnus.optionSoulringAutouse, "panorama/images/items/soul_ring_png.vtex_c")
 Menu.AddOptionIcon(Magnus.optionSkewerAfterRP, "panorama/images/spellicons/magnataur_skewer_png.vtex_c")
 Menu.AddOptionIcon(Magnus.optionToggleSkewerAfterRP, "panorama/images/spellicons/magnataur_skewer_png.vtex_c")
 Menu.AddOptionIcon(Magnus.optionRPFailSwitch, 'panorama/images/spellicons/magnataur_reverse_polarity_png.vtex_c')
@@ -400,7 +402,7 @@ function Magnus.OnUpdate()
                                         continueCasting = true
                                     else
                                         local soulring = NPC.GetItem(myHero, "item_soul_ring")
-                                        if Ability.IsCastable(soulring, Mana) and Mana + 150 > shockwaveManaCost + skewerManaCost then
+                                        if Ability.IsCastable(soulring, Mana) and (Mana + 150 > shockwaveManaCost + skewerManaCost) and Menu.IsEnabled(Magnus.optionSoulringAutouse) then
                                             Ability.CastNoTarget(soulring)
                                             continueCasting = true
                                         end
@@ -441,7 +443,7 @@ function Magnus.OnUpdate()
                                 end
                             else
                                 local soulring = NPC.GetItem(myHero, "item_soul_ring")
-                                if (Ability.IsCastable(soulring, Mana)) and not (Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave)) and (Mana + 150 > skewerManaCost) and (Ability.IsReady(blink)) and (Skewerstep == 0) then
+                                if (Ability.IsCastable(soulring, Mana)) and not (Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave)) and (Mana + 150 > skewerManaCost) and (Ability.IsReady(blink)) and (Skewerstep == 0) and Menu.IsEnabled(Magnus.optionSoulringAutouse) then
                                     Ability.CastNoTarget(soulring)
                                 end
                             end
@@ -521,7 +523,7 @@ function Magnus.OnUpdate()
                                         continueCasting = true
                                     else
                                         local soulring = NPC.GetItem(myHero, "item_soul_ring")
-                                        if Ability.IsCastable(soulring, Mana) and Mana + 150 > shockwaveManaCost + skewerManaCost then
+                                        if Ability.IsCastable(soulring, Mana) and (Mana + 150 > shockwaveManaCost + skewerManaCost) and Menu.IsEnabled(Magnus.optionSoulringAutouse) then
                                             Ability.CastNoTarget(soulring)
                                             continueCasting = true
                                         end
@@ -564,7 +566,7 @@ function Magnus.OnUpdate()
                                 end
                             else
                                 local soulring = NPC.GetItem(myHero, "item_soul_ring")
-                                if (Ability.IsCastable(soulring, Mana)) and not (Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave)) and (Mana + 150 > skewerManaCost) and (Ability.IsReady(blink)) and (NPC.IsPositionInRange(enemy, Input.GetWorldCursorPos(), 250, 0)) and (Skewerstep == 0) then
+                                if (Ability.IsCastable(soulring, Mana)) and not (Menu.IsEnabled(Magnus.optionBlinkSkewerShockwave)) and (Mana + 150 > skewerManaCost) and (Ability.IsReady(blink)) and (NPC.IsPositionInRange(enemy, Input.GetWorldCursorPos(), 250, 0)) and (Skewerstep == 0) and (Menu.IsEnabled(Magnus.optionSoulringAutouse)) then
                                     Ability.CastNoTarget(soulring)
                                 end
                             end
@@ -775,7 +777,7 @@ function Magnus.OnUpdate()
                 end
             else
                 local soulring = NPC.GetItem(myHero, "item_soul_ring")
-                if Ability.IsCastable(soulring, Mana) and Mana + 150 > minMana then
+                if Ability.IsCastable(soulring, Mana) and Mana + 150 > minMana and Menu.IsEnabled(Magnus.optionSoulringAutouse) then
                     Ability.CastNoTarget(soulring)
                 end
             end
