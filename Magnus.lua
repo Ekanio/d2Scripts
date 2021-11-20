@@ -683,21 +683,23 @@ function Magnus.OnUpdate()
                     if count >= Menu.GetValue(Magnus.minEnemiesRP) then
                         if RPstep == 0 then
                             for i, item in pairs(Menu.GetItems(Magnus.RPitems)) do
-                                if Ability.IsReady(NPC.GetItem(myHero, tostring(item))) then
-                                    if item == "item_black_king_bar" then
-                                        if not NPC.HasModifier(myHero, "modifier_black_king_bar_immune") then
+                                if Menu.IsSelected(Magnus.RPitems, item) then
+                                    if Ability.IsReady(NPC.GetItem(myHero, tostring(item))) then
+                                        if item == "item_black_king_bar" then
+                                            if not NPC.HasModifier(myHero, "modifier_black_king_bar_immune") then
+                                                Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
+                                            end
+                                        end
+                                        if item == "item_spider_legs" then
                                             Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
                                         end
-                                    end
-                                    if item == "item_spider_legs" then
-                                        Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
-                                    end
-                                    if item == "item_seer_stone" then
-                                        Ability.CastPosition(NPC.GetItem(myHero, tostring(item)), pos)
-                                    end
-                                    if Mana > minMana + HornTossManaCost + 250 then
-                                        if item ~= "item_black_king_bar" then
-                                            Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
+                                        if item == "item_seer_stone" then
+                                            Ability.CastPosition(NPC.GetItem(myHero, tostring(item)), pos)
+                                        end
+                                        if Mana > minMana + HornTossManaCost + 250 then
+                                            if item ~= "item_black_king_bar" then
+                                                Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
+                                            end
                                         end
                                     end
                                 end
