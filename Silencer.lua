@@ -24,7 +24,7 @@ Silencer.optionItems = Menu.AddOptionMultiSelect({"Hero Specific", "Silencer", "
     {"item_veil_of_discord", "panorama/images/items/veil_of_discord_png.vtex_c", true},
 }, false)
 
-Silencer.optionAutoGlobal = Menu.AddOptionMultiSelect({"Hero Specific", "Silencer", "Auto global"}, "Auto global:", 
+Silencer.optionAutoGlobal = Menu.AddOptionMultiSelect({"Hero Specific", "Silencer", "Auto global"}, "Auto global (After skill used):", 
 {
     {"modifier_enigma_black_hole_pull", "panorama/images/spellicons/enigma_black_hole_png.vtex_c", true},
     {"modifier_faceless_void_chronosphere_freeze", "panorama/images/spellicons/faceless_void_chronosphere_png.vtex_c", true},
@@ -34,6 +34,7 @@ Silencer.optionAutoGlobal = Menu.AddOptionMultiSelect({"Hero Specific", "Silence
 
 Menu.AddOptionIcon(Silencer.optionEnabled, '~/MenuIcons/Enable/enable_check_round.png')
 Menu.AddMenuIcon({"Hero Specific", "Silencer"}, 'panorama/images/heroes/icons/npc_dota_hero_silencer_png.vtex_c')
+Menu.AddMenuIcon({"Hero Specific", "Silencer", "Combo"}, "~/MenuIcons/ellipsis.png")
 Menu.AddMenuIcon({"Hero Specific", "Silencer", "Auto global"}, '~/MenuIcons/mute_guy.png')
 
 local Timer = GameRules.GetGameTime();
