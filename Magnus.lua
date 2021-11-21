@@ -800,7 +800,7 @@ function Magnus.OnPrepareUnitOrders(order)
                 local enemiesNear = Heroes.InRadius(Entity.GetAbsOrigin(myHero), 410, myTeam, Enum.TeamType.TEAM_ENEMY)
                 local count = 0
                 for i,enemy in pairs(enemiesNear) do
-                    if enemy ~= nil and Entity.IsHero(enemy) and not Entity.IsSameTeam(myHero, enemy) and Entity.IsAlive(enemy) and not Entity.IsDormant(enemy) and not NPC.IsIllusion(enemy) then
+                    if enemy ~= nil and Entity.IsHero(enemy) and not Entity.IsSameTeam(myHero, enemy) and Entity.IsAlive(enemy) and not Entity.IsDormant(enemy) and not NPC.IsIllusion(enemy) and not NPC.HasState(enemy, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
                         count = count + 1
                     end
                 end
