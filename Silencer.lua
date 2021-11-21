@@ -149,10 +149,12 @@ function Silencer.OnUpdate()
         if not isSuitableUseItems(myHero) and isSuitableToAttack(myHero) and not isSuitableToCast(myHero) then castStep = 3 end
         if Timer <= GameTime then
             target = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
-            if Entity.IsDormant(target) or not Entity.IsAlive(target) or NPC.IsStructure(target) or NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then return end
-            if not NPC.IsPositionInRange(target, cursorPos, 300, 0) then
+            if not NPC.IsPositionInRange(target, cursorPos, 400, 0) or not NPC.IsEntityInRange(myHero, target, 1700) then
+                Timer = GameTime + 0.1
+                NPC.MoveTo(myHero, cursorPos)
                 target = nil
             end
+            if Entity.IsDormant(target) or not Entity.IsAlive(target) or NPC.IsStructure(target) or NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then return end
             if target then
                 if castStep == 0 then
                     for i, item in pairs(Menu.GetItems(Silencer.optionItems)) do
@@ -179,7 +181,7 @@ function Silencer.OnUpdate()
                             end
                         end
                     end
-                    if (Entity.GetAbsOrigin(target) - Entity.GetAbsOrigin(myHero)):Length2D() < 300 then
+                    if (Entity.GetAbsOrigin(target) - Entity.GetAbsOrigin(myHero)):Length2D() < 400 then
                         if Ability.IsCastable(NPC.GetItem(myHero, "item_hurricane_pike"), mana) and Menu.IsSelected(Silencer.optionItems, "item_hurricane_pike") then
                             Ability.CastTarget(NPC.GetItem(myHero, "item_hurricane_pike"), target)
                         end
@@ -216,7 +218,7 @@ function Silencer.OnUpdate()
                 end
                 if castStep == 3 then
                     Timer = GameTime + 0.1
-                    if Menu.IsSelected(Silencer.optionAbilities, "glaives") and NPC.IsEntityInRange(myHero, target, Ability.GetCastRange(glaive)) and Ability.IsCastable(glaive, NPC.GetMana(myHero)) and isSuitableToCast(myHero) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
+                    if Menu.IsSelected(Silencer.optionAbilities, "glaives") and NPC.IsEntityInRange(myHero, target, (Ability.GetCastRange(glaive) + 200)) and Ability.IsCastable(glaive, NPC.GetMana(myHero)) and isSuitableToCast(myHero) and not NPC.HasState(target, Enum.ModifierState.MODIFIER_STATE_MAGIC_IMMUNE) then
                         Ability.CastTarget(glaive, target)
                     else
                         Player.AttackTarget(myPlayer, myHero, target)
