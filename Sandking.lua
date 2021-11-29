@@ -168,6 +168,7 @@ SK.comboItems = Menu.AddOptionMultiSelect({"Hero Specific", "Sand King"}, "Items
     {"item_rod_of_atos", "panorama/images/items/rod_of_atos_png.vtex_c", true},
     {"item_sheepstick", "panorama/images/items/sheepstick_png.vtex_c", true},
     {"item_gungir", "panorama/images/items/gungir_png.vtex_c", true},
+    {"item_veil_of_discord", "panorama/images/items/veil_of_discord_png.vtex_c", true},
 }, false)
 Menu.AddMenuIcon({"Hero Specific", "Sand King", "Epicenter"}, "panorama/images/spellicons/sandking_epicenter_png.vtex_c")
 Menu.AddMenuIcon({"Hero Specific", "Sand King"}, 'panorama/images/heroes/icons/npc_dota_hero_sand_king_png.vtex_c')
@@ -282,7 +283,7 @@ function SK.OnUpdate()
             else
                 if combostep == 0 then
                     if Ability.IsReady(epicenter) then
-                        if (#Heroes.InRadius(Entity.GetAbsOrigin(target), 525, myTeam, Enum.TeamType.TEAM_ENEMY) >= 2) or Menu.IsSelected(SK.epicenterPriority, NPC.GetUnitName(target)) then
+                        if (#Heroes.InRadius(Entity.GetAbsOrigin(target), 525, myTeam, Enum.TeamType.TEAM_ENEMY) >= Menu.GetValue(SK.minEnemiesEpicenter)) or Menu.IsSelected(SK.epicenterPriority, NPC.GetUnitName(target)) then
                             Ability.CastNoTarget(epicenter)
                             Timer = gameTime + 0.2;
                             local Range = 0
@@ -375,7 +376,7 @@ function SK.OnUpdate()
                             for i, item in pairs(Menu.GetItems(SK.comboItems)) do
                                 if Menu.IsSelected(SK.comboItems, item) then
                                     if Ability.IsReady(NPC.GetItem(myHero, tostring(item))) then
-                                        if item == "item_gungir" then
+                                        if item == "item_gungir" or item == "item_veil_of_discord" then
                                             Ability.CastPosition(NPC.GetItem(myHero, tostring(item)), Entity.GetAbsOrigin(target))
                                         end
                                         if item == "item_orchid" or item == "item_bloodthorn" or item == "item_rod_of_atos" or item == "item_sheepstick" then
