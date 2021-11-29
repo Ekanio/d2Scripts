@@ -218,7 +218,7 @@ end;
 
 function Warlock.OnUpdate()
     if not Menu.IsEnabled(Warlock.optionEnabled) then return end
-    if not myHero then return end
+    if not Entity.IsHero(myHero) then return end
     local cursorPos = Input.GetWorldCursorPos()
     local GameTime = GameRules.GetGameTime();
     mana = NPC.GetMana(myHero)
