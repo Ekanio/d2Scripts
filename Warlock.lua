@@ -51,7 +51,7 @@ Menu.AddOptionIcon(Warlock.optionEnabledAutoUlti, '~/MenuIcons/Enable/enable_che
 Menu.AddMenuIcon({"Hero Specific", "Warlock"}, 'panorama/images/heroes/icons/npc_dota_hero_warlock_png.vtex_c')
 Menu.AddMenuIcon({"Hero Specific", "Warlock", "Combo"}, "~/MenuIcons/ellipsis.png")
 Menu.AddMenuIcon({"Hero Specific", "Warlock", "Combo", "Settings"}, "~/MenuIcons/ellipsis.png")
-Menu.AddMenuIcon({"Hero Specific", "Warlock", "Auto ulti"}, '~/MenuIcons/mute_guy.png')
+Menu.AddMenuIcon({"Hero Specific", "Warlock", "Auto ulti"}, '~/MenuIcons/box_drop.png')
 
 local Timer = GameRules.GetGameTime();
 local TimerUpdate = GameRules.GetGameTime() - 100;
