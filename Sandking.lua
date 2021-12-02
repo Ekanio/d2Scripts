@@ -302,14 +302,18 @@ function SK.OnUpdate()
                                 Player.HoldPosition(Players.GetLocal(), myHero)
                                 target = nil
                             end
+                        else
+                            combostep = 1
+                        end
+                        if NPC.GetActivity(myHero) == Enum.GameActivity.ACT_DOTA_CAST_ABILITY_4 then
                             if Entity.IsDormant(target) then
                                 if Menu.GetValue(SK.optionEpicenterDormant) == 1 then
                                     Player.HoldPosition(Players.GetLocal(), myHero)
+                                    combostep = 0
                                     target = nil
+                                    comboing = false
                                 end
                             end
-                        else
-                            combostep = 1
                         end
                     else
                         combostep = 1
@@ -393,6 +397,8 @@ function SK.OnUpdate()
                                 if (Ability.IsCastable(blink, mana) and Menu.IsSelected(SK.comboItems, "blinks")) then
                                     Ability.CastPosition(blink, Entity.GetAbsOrigin(target))
                                 end
+                            else
+                                combostep = 4
                             end
                         end
                     else
