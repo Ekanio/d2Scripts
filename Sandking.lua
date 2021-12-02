@@ -136,6 +136,7 @@ local burrowstrikecastrange = nil
 local burrowstrikeManaCost = nil
 local sandstormManaCost = nil
 local epicenterManaCost = nil
+local mana = nil
 local comboing = false
 
 local flagMenuUpdate = false
@@ -151,7 +152,7 @@ SK.optionEnabled = Menu.AddOptionBool({"Hero Specific", "Sand King"}, "Enable", 
 SK.optionBind = Menu.AddKeyOption({"Hero Specific", "Sand King"}, "Combo key", Enum.ButtonCode.BUTTON_CODE_NONE)
 SK.optionEpicenterDormant = Menu.AddOptionCombo({"Hero Specific", "Sand King", "Epicenter"}, "If target becomes dormant while casting", {'Blink to mouse pos', 'Stop casting epicenter'}, 0)
 SK.minEnemiesEpicenter = Menu.AddOptionSlider({"Hero Specific", "Sand King", "Epicenter"}, "Minimum enemies", 1, 5, 3)
-SK.comboItems = Menu.AddOptionMultiSelect({"Hero Specific", "Sand King"}, "Items:", 
+SK.comboItems = Menu.AddOptionMultiSelect({"Hero Specific", "Sand King", "Items"}, "Items in combo:", 
 {
     {"item_seer_stone", "panorama/images/items/seer_stone_png.vtex_c", true},
     {"item_shivas_guard", "panorama/images/items/shivas_guard_png.vtex_c", true},
@@ -169,9 +170,13 @@ SK.comboItems = Menu.AddOptionMultiSelect({"Hero Specific", "Sand King"}, "Items
     {"item_sheepstick", "panorama/images/items/sheepstick_png.vtex_c", true},
     {"item_gungir", "panorama/images/items/gungir_png.vtex_c", true},
     {"item_veil_of_discord", "panorama/images/items/veil_of_discord_png.vtex_c", true},
+    {"blinks", "panorama/images/items/blink_png.vtex_c", true},
 }, false)
 Menu.AddMenuIcon({"Hero Specific", "Sand King", "Epicenter"}, "panorama/images/spellicons/sandking_epicenter_png.vtex_c")
 Menu.AddMenuIcon({"Hero Specific", "Sand King"}, 'panorama/images/heroes/icons/npc_dota_hero_sand_king_png.vtex_c')
+Menu.AddOptionIcon(SK.optionEnabled, '~/MenuIcons/Enable/enable_check_round.png')
+Menu.AddOptionIcon(SK.optionBind, '~/MenuIcons/status.png')
+Menu.AddMenuIcon({"Hero Specific", "Sand King", "Items"}, "~/MenuIcons/open_box.png")
 
 --LIBS
 
@@ -211,7 +216,7 @@ local function SKUpdateInfo()
     burrowstrike = NPC.GetAbility(myHero, "sandking_burrowstrike")
     sandstorm = NPC.GetAbility(myHero, "sandking_sand_storm")
     epicenter = NPC.GetAbility(myHero, "sandking_epicenter")
-    burrowstrikecastrange = Ability.GetCastRange(burrowstrike)
+    burrowstrikecastrange = Ability.GetCastRange(burrowstrike) - 50
     burrowstrikeManaCost = Ability.GetManaCost(burrowstrike)
     sandstormManaCost = Ability.GetManaCost(sandstorm)
     epicenterManaCost = Ability.GetManaCost(epicenter)
@@ -254,8 +259,8 @@ end;
 
 function SK.OnUpdate()
     if not Menu.IsEnabled(SK.optionEnabled) then return end
-    if not myHero then return end
-    
+    if not Entity.IsHero(myHero) then return end
+    mana = NPC.GetMana(myHero)
     local gameTime = GameRules.GetGameTime()
     if TimerUpdate <= gameTime then
         TimerUpdate = gameTime + 0.4;
@@ -269,10 +274,10 @@ function SK.OnUpdate()
             if target == nil then
                 local nearest = Input.GetNearestHeroToCursor(myTeam, Enum.TeamType.TEAM_ENEMY)
                 local Range = 0
-                if Ability.IsCastable(blink, 400) then
-                    Range = 800 + Ability.GetCastRange(blink)
+                if Ability.IsCastable(blink, mana) and Menu.IsSelected(SK.comboItems, "blinks") then
+                    Range = 1100 + Ability.GetCastRange(blink)
                 end
-                if Ability.IsReady(burrowstrike) then
+                if Ability.IsCastable(burrowstrike, mana) then
                     Range = Range + burrowstrikecastrange
                 end
                 if NPC.IsPositionInRange(nearest, mousePos, 400, 0) then
@@ -287,8 +292,8 @@ function SK.OnUpdate()
                             Ability.CastNoTarget(epicenter)
                             Timer = gameTime + 0.2;
                             local Range = 0
-                            if Ability.IsCastable(blink, 400) then
-                                Range = 800 + Ability.GetCastRange(blink)
+                            if Ability.IsCastable(blink, 400) and Menu.IsSelected(SK.comboItems, "blinks") then
+                                Range = 1100 + Ability.GetCastRange(blink)
                             end
                             if Ability.IsReady(burrowstrike) then
                                 Range = Range + burrowstrikecastrange
@@ -311,19 +316,24 @@ function SK.OnUpdate()
                     end
                 end
                 if combostep == 1 then
-                    if Ability.IsReady(blink) then
+                    if (Ability.IsReady(blink) and Menu.IsSelected(SK.comboItems, "blinks") and Menu.GetValue(SK.optionEpicenterDormant) == 0) then
                         if Entity.IsDormant(target) then
-                            if Menu.GetValue(SK.optionEpicenterDormant) == 0 then
-                                Ability.CastPosition(blink, mousePos)
-                                Timer = gameTime + 0.2;
-                            end
+                            Ability.CastPosition(blink, mousePos)
+                            Timer = gameTime + 0.2;
                         else
-                            if Ability.IsReady(burrowstrike) then castrangeBlink = burrowstrikecastrange else castrangeBlink = 0 end
-                            if not NPC.IsPositionInRange(myHero, Entity.GetAbsOrigin(target), castrangeBlink, 0) then
-                                Ability.CastPosition(blink, Entity.GetAbsOrigin(target), false, true)
-                            else
-                                combostep = 2
-                            end
+                            combostep = 2
+                        end
+                    else
+                        combostep = 1.5
+                    end
+                end
+                if combostep == 1.5 then
+                    if Ability.IsReady(burrowstrike) and Menu.GetValue(SK.optionEpicenterDormant) == 0 then
+                        if Entity.IsDormant(target) then
+                            Ability.CastPosition(burrowstrike, mousePos)
+                            Timer = gameTime + 0.2;
+                        else
+                            combostep = 2
                         end
                     else
                         combostep = 2
@@ -332,7 +342,7 @@ function SK.OnUpdate()
                 if combostep == 2 then
                     for i, item in pairs(Menu.GetItems(SK.comboItems)) do
                         if Menu.IsSelected(SK.comboItems, item) then
-                            if Ability.IsReady(NPC.GetItem(myHero, tostring(item))) then
+                            if Ability.IsCastable(NPC.GetItem(myHero, tostring(item)), mana) then
                                 if item == "item_black_king_bar" then
                                     if not NPC.HasModifier(myHero, "modifier_black_king_bar_immune") then
                                         Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
@@ -347,7 +357,7 @@ function SK.OnUpdate()
                                 if item == "item_lotus_orb" then
                                     Ability.CastTarget(NPC.GetItem(myHero, tostring(item)), myHero)
                                 end
-                                if NPC.GetMana(myHero) > burrowstrikeManaCost + sandstormManaCost + 250 then
+                                if mana > burrowstrikeManaCost + sandstormManaCost then
                                     if item ~= "item_black_king_bar" then
                                         Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
                                     end
@@ -361,8 +371,28 @@ function SK.OnUpdate()
                 if combostep == 3 then
                     if Ability.IsReady(burrowstrike) then
                         if not Entity.IsDormant(target) then
-                            if NPC.IsPositionInRange(myHero, Entity.GetAbsOrigin(target), burrowstrikecastrange + 100, 0) then
+                            local distance = (Entity.GetAbsOrigin(target) - Entity.GetAbsOrigin(myHero)):Length2D()
+                            if distance > burrowstrikecastrange - 100 then
+                                if (Ability.IsCastable(blink, mana) and Menu.IsSelected(SK.comboItems, "blinks")) then
+                                    Ability.CastPosition(blink, Entity.GetAbsOrigin(target))
+                                end
+                            end
+                            if NPC.IsPositionInRange(myHero, Entity.GetAbsOrigin(target), burrowstrikecastrange, 0) then
                                 Ability.CastPosition(burrowstrike, Entity.GetAbsOrigin(target))
+                                Timer = gameTime + 0.2;
+                            end
+                        end
+                    else
+                        combostep = 3.5
+                    end
+                end
+                if combostep == 3.5 then
+                    if Ability.IsReady(blink) then
+                        if not Entity.IsDormant(target) then
+                            if not NPC.IsPositionInRange(myHero, Entity.GetAbsOrigin(target), 500, 0) then
+                                if (Ability.IsCastable(blink, mana) and Menu.IsSelected(SK.comboItems, "blinks")) then
+                                    Ability.CastPosition(blink, Entity.GetAbsOrigin(target))
+                                end
                             end
                         end
                     else
@@ -372,7 +402,9 @@ function SK.OnUpdate()
                 if combostep == 4 then
                     if Ability.IsReady(sandstorm) then
                         if NPC.IsPositionInRange(myHero, Entity.GetAbsOrigin(target), 500, 0) then
-                            Ability.CastNoTarget(sandstorm, Entity.GetAbsOrigin(target))
+                            if Ability.IsCastable(sandstorm, mana) then
+                                Ability.CastNoTarget(sandstorm)
+                            end
                             for i, item in pairs(Menu.GetItems(SK.comboItems)) do
                                 if Menu.IsSelected(SK.comboItems, item) then
                                     if Ability.IsReady(NPC.GetItem(myHero, tostring(item))) then
@@ -387,6 +419,7 @@ function SK.OnUpdate()
                             end
                         end
                     else
+                        Timer = gameTime + 0.2;
                         combostep = 0
                     end
                 end
