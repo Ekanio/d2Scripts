@@ -67,7 +67,7 @@ function PlayersInQueue.OnFrame()
 		alpha = Menu.GetValue(PlayersInQueue.alphaHover)
 	end
 	Renderer.SetDrawColor(21, 21, 21, alpha)
-	Renderer.DrawFilledRoundedRect(x, y + 11, 329, 489, 5) -- backgroundMain
+	Renderer.DrawFilledRoundedRect(x, y, 329, 500, 5) -- backgroundMain
 	Renderer.SetDrawColor(28, 28, 28, alpha)
 	Renderer.DrawFilledRoundedRect(x, y, 329, 35, 2) -- backgroundTop
 	Renderer.SetDrawColor(153, 30, 51, alpha)
