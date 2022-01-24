@@ -54,7 +54,7 @@ local count = 0
 
 function PlayersInQueue.OnFrame()
 	if not Menu.IsEnabled(PlayersInQueue.optionEnable) then return end
-	if (GameRules.GetGameState() == 5 or Engine.IsInGame()) then return end
+	if not (GameRules.GetGameState() == -1) then return end
 	if flag == false then
 		local request = {}
 		local encodedMessage = protobuf.encodeFromJSON("CMsgDOTAMatchmakingStatsRequest", JSON:encode(request))
