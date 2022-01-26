@@ -25,7 +25,10 @@ Warlock.optionItems = Menu.AddOptionMultiSelect({"Hero Specific", "Warlock", "Co
     {"item_veil_of_discord", "panorama/images/items/veil_of_discord_png.vtex_c", true},
     {"item_shivas_guard", "panorama/images/items/shivas_guard_png.vtex_c", true},
     {"item_glimmer_cape", "panorama/images/items/glimmer_cape_png.vtex_c", true},
-    {"item_shadow_amulet", "panorama/images/items/shadow_amulet_png.vtex_c", true}
+    {"item_shadow_amulet", "panorama/images/items/shadow_amulet_png.vtex_c", true},
+    {"item_refresher", "panorama/images/items/refresher_png.vtex_c", true},
+    {"item_refresher_shard", "panorama/images/items/refresher_shard_png.vtex_c", true},
+    {"item_ancient_janggo", "panorama/images/items/ancient_janggo_png.vtex_c", true}
 }, false)
 
 Warlock.optionEnabledAutoUlti = Menu.AddOptionBool({"Hero Specific", "Warlock", "Auto ulti"}, "Enable auto ulti", false)
@@ -145,9 +148,6 @@ local function CantMove(npc)
     return false
 end
 
-
-
-
 local function PredictedPosition(npc, delay)
     local pos = Entity.GetAbsOrigin(npc)
     if CantMove(npc) then return pos end
@@ -229,7 +229,7 @@ function Warlock.OnUpdate()
     if Menu.IsEnabled(Warlock.optionEnabledAutoUlti) and not Menu.IsKeyDown(Warlock.optionAutoUltiPanicKey) then
         if not Menu.IsKeyDown(Warlock.optionComboKey) then
             if Timer <= GameTime then
-                local bestPos = bestPosition(Heroes.InRadius(Entity.GetAbsOrigin(myHero), Ability.GetCastRange(chaotic) + 250, myTeam, Enum.TeamType.TEAM_ENEMY), Menu.GetValue(Warlock.optionAutoUltiAOE), 0.3)
+                local bestPos = bestPosition(Heroes.InRadius(Entity.GetAbsOrigin(myHero), Ability.GetCastRange(chaotic), myTeam, Enum.TeamType.TEAM_ENEMY), Menu.GetValue(Warlock.optionAutoUltiAOE), 0.3)
                 if #Heroes.InRadius(bestPos, 600, myTeam, Enum.TeamType.TEAM_ENEMY) >= Menu.GetValue(Warlock.optionMinEnemiesForAutoulti) and Ability.IsCastable(chaotic, mana) then
                     Ability.CastPosition(chaotic, bestPos)
                     Timer = GameTime + 0.1
@@ -283,7 +283,7 @@ function Warlock.OnUpdate()
                     for i, item in pairs(Menu.GetItems(Warlock.optionItems)) do
                         if Menu.IsSelected(Warlock.optionItems, item) then
                             if Ability.IsCastable(NPC.GetItem(myHero, tostring(item)), mana) then
-                                if not (item == "item_force_staff" or item == "item_hurricane_pike" or item == "item_glimmer_cape" or item == "item_shadow_amulet") then
+                                if not (item == "item_force_staff" or item == "item_hurricane_pike" or item == "item_glimmer_cape" or item == "item_shadow_amulet" or item == "item_refresher" or item == "item_refresher_shard") then
                                     if item == "item_shivas_guard" then
                                         Ability.CastNoTarget(NPC.GetItem(myHero, tostring(item)))
                                     else
@@ -344,10 +344,22 @@ function Warlock.OnUpdate()
                     end
                 end
                 if castStep == 5 then
-                    if Ability.IsCastable(NPC.GetItem(myHero, "item_refresher"), mana) then
-                        Ability.CastNoTarget(NPC.GetItem(myHero, "item_refresher"))
+                    local refresh = nil
+                    if (Ability.IsReady(NPC.GetItem(myHero, "item_refresher")) and Menu.IsSelected(Warlock.optionItems, "item_refresher")) then
+                        refresh = NPC.GetItem(myHero, "item_refresher")
+                    end
+                    if (Ability.IsReady(NPC.GetItem(myHero, "item_refresher_shard")) and Menu.IsSelected(Warlock.optionItems, "item_refresher_shard")) then
+                        refresh = NPC.GetItem(myHero, "item_refresher_shard")
+                    end
+                    if Ability.IsCastable(refresh, mana) then
+                        Ability.CastNoTarget(refresh)
                         castStep = 0
                     else
+                        if Menu.IsSelected(Warlock.optionItems, "item_ancient_janggo") or Menu.IsSelected(Warlock.optionItems, "item_ancient_janggo") then
+                            if (Ability.IsCastable(NPC.GetItem(myHero, "item_ancient_janggo"), mana) and (Item.GetCurrentCharges(NPC.GetItem(myHero, "item_ancient_janggo")) > 1)) then
+                                Ability.CastNoTarget(NPC.GetItem(myHero, "item_ancient_janggo"))
+                            end
+                        end
                         if Ability.IsCastable(upheaval, mana) and Menu.IsSelected(Warlock.optionAbilities, "upheaval") then
                             Timer = GameTime + 0.1
                             Ability.CastPosition(upheaval, bestPosition(Heroes.InRadius(Entity.GetAbsOrigin(target), 1200, myTeam, Enum.TeamType.TEAM_ENEMY),600, 0.3))
