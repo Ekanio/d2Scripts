@@ -54,7 +54,7 @@ local shockwave = nil
 local skewer = nil
 local RP = nil
 local HornToss = nil
-local talent425 = nil
+local talent375 = nil
 local skewer_castrange = nil
 local skewerManaCost = nil
 local shockwaveManaCost = nil
@@ -200,7 +200,7 @@ local function MagnusUpdateInfo()
     skewer = NPC.GetAbility(myHero, "magnataur_skewer")
     RP = NPC.GetAbility(myHero, "magnataur_reverse_polarity")
     HornToss = NPC.GetAbility(myHero, "magnataur_horn_toss")
-    talent425 = NPC.GetAbility(myHero, "special_bonus_unique_magnus_3")
+    talent375 = NPC.GetAbility(myHero, "special_bonus_unique_magnus_3")
     skewer_castrange = Ability.GetLevelSpecialValueFor(skewer, "range") + Ability.GetCastRange(skewer) + 200
     skewerManaCost = Ability.GetManaCost(skewer)
     shockwaveManaCost = Ability.GetManaCost(shockwave)
@@ -357,8 +357,8 @@ function Magnus.OnUpdate()
             drawParticleCreateFlag = false
         end
     end
-    if talent425 and Ability.GetLevel(talent425) > 0 then
-        skewer_castrange = Ability.GetLevelSpecialValueFor(skewer, "range") + Ability.GetCastRange(skewer) + 425 + 200
+    if talent375 and Ability.GetLevel(talent375) > 0 then
+        skewer_castrange = Ability.GetLevelSpecialValueFor(skewer, "range") + Ability.GetCastRange(skewer) + 375 + 200
     end
     if Menu.IsKeyDownOnce(Magnus.optionBlinkSkewerToggle) then
         BlinkSkewerToggle = not BlinkSkewerToggle
