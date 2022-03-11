@@ -125,6 +125,7 @@ local heroes = {  -- huge thanks to Svotin
     [123] = 'npc_dota_hero_hoodwink',
     [135] = 'npc_dota_hero_dawnbreaker',
     [136] = 'npc_dota_hero_marci',
+    [137] = 'npc_dota_hero_primal_beast'
 }
 
 local blink = nil
@@ -232,7 +233,9 @@ local function SKUpdateInfo()
         if(#teammates == #teammates2) then
             for i,enemy in pairs(Players.GetAll()) do
                 if not has_value(teammates, Player.GetPlayerID(enemy)) then
-                    table.insert(menuSelectionTable, {heroes[Player.GetTeamData(enemy).selected_hero_id], "panorama/images/heroes/icons/" .. heroes[Player.GetTeamData(enemy).selected_hero_id] .. "_png.vtex_c", false})
+                    if heroes[Player.GetTeamData(enemy).selected_hero_id] then
+                        table.insert(menuSelectionTable, {heroes[Player.GetTeamData(enemy).selected_hero_id], "panorama/images/heroes/icons/" .. heroes[Player.GetTeamData(enemy).selected_hero_id] .. "_png.vtex_c", false})
+                    end
                 end
             end
             SK.epicenterPriority = Menu.AddOptionMultiSelect({"Hero Specific", "Sand King", "Epicenter"}, "Cast epicenter anyway:", menuSelectionTable, false)
